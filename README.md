@@ -363,63 +363,97 @@ Result of `rake benchmark` ([source](https://github.com/sputnikgugja/rtype/tree/
 The benchmark doesn't include `Rubype` gem because I can't install Rubype on my environment.
 
 ### MRI
+Rtype is 1.56x faster than Sig and 2.85x faster than Contracts
+
 ```
 Ruby version: 2.1.7
 Ruby engine: ruby
 Ruby description: ruby 2.1.7p400 (2015-08-18 revision 51632) [x64-mingw32]
-Rtype version: 0.0.1
+Rtype version: 0.1.1
 Sig version: 1.0.1
 Contracts version: 0.13.0
 Typecheck version: 0.1.2
 Warming up --------------------------------------
-                pure    84.672k i/100ms
-               rtype    10.221k i/100ms
-                 sig     8.271k i/100ms
-           contracts     4.604k i/100ms
-           typecheck     1.102k i/100ms
+                pure    52.239k i/100ms
+               rtype     7.861k i/100ms
+                 sig     5.680k i/100ms
+           contracts     3.514k i/100ms
+           typecheck   813.000  i/100ms
 Calculating -------------------------------------
-                pure      3.438M (±33.5%) i/s -     15.580M
-               rtype    115.274k (± 9.2%) i/s -    572.376k
-                 sig    100.204k (± 8.0%) i/s -    504.531k
-           contracts     49.026k (± 9.6%) i/s -    244.012k
-           typecheck     11.108k (± 7.4%) i/s -     56.202k
+                pure      2.125M (±25.5%) i/s -     10.030M
+               rtype    106.900k (±13.8%) i/s -    526.687k
+                 sig     68.405k (±17.0%) i/s -    335.120k
+           contracts     37.494k (±12.1%) i/s -    186.242k
+           typecheck      9.165k (±11.7%) i/s -     45.528k
 
 Comparison:
-                pure:  3437842.1 i/s
-               rtype:   115274.1 i/s - 29.82x slower
-                 sig:   100203.7 i/s - 34.31x slower
-           contracts:    49025.8 i/s - 70.12x slower
-           typecheck:    11107.6 i/s - 309.50x slower
+                pure:  2124989.5 i/s
+               rtype:   106899.8 i/s - 19.88x slower
+                 sig:    68405.0 i/s - 31.06x slower
+           contracts:    37493.9 i/s - 56.68x slower
+           typecheck:     9164.5 i/s - 231.87x slower
 ```
 
 ### JRuby
+Rtype is 1.23x ~ 1.90x faster than Sig and 3.26x ~ 4.57x faster than Contracts
+
 ```
+# Test 1
 Ruby version: 2.2.3
 Ruby engine: jruby
 Ruby description: jruby 9.0.5.0 (2.2.3) 2016-01-26 7bee00d Java HotSpot(TM) 64-Bit Server VM 25.60-b23 on 1.8.0_60-b27 +jit [Windows 10-amd64]
-Rtype version: 0.0.1
+Rtype version: 0.1.1
 Sig version: 1.0.1
 Contracts version: 0.13.0
 Typecheck version: 0.1.2
 Warming up --------------------------------------
-                pure    17.077k i/100ms
-               rtype     2.774k i/100ms
-                 sig     3.747k i/100ms
-           contracts   907.000  i/100ms
-           typecheck   937.000  i/100ms
+                pure     7.415k i/100ms
+               rtype   883.000  i/100ms
+                 sig   922.000  i/100ms
+           contracts   408.000  i/100ms
+           typecheck   404.000  i/100ms
 Calculating -------------------------------------
-                pure      5.186M (±50.8%) i/s -     15.933M
-               rtype     69.206k (±15.3%) i/s -    341.202k
-                 sig     64.460k (±16.4%) i/s -    314.748k
-           contracts     24.372k (±13.2%) i/s -    119.724k
-           typecheck     11.670k (±12.8%) i/s -     58.094k
+                pure      4.242M (±46.3%) i/s -     16.795M
+               rtype     55.772k (±29.1%) i/s -    249.006k
+                 sig     29.344k (±23.5%) i/s -    134.612k
+           contracts     12.192k (±29.4%) i/s -     51.816k
+           typecheck      7.503k (±23.5%) i/s -     35.148k
 
 Comparison:
-                pure:  5185896.5 i/s
-               rtype:    69206.2 i/s - 74.93x slower
-                 sig:    64460.2 i/s - 80.45x slower
-           contracts:    24371.7 i/s - 212.78x slower
-           typecheck:    11670.0 i/s - 444.38x slower
+                pure:  4241753.6 i/s
+               rtype:    55771.7 i/s - 76.06x slower
+                 sig:    29344.3 i/s - 144.55x slower
+           contracts:    12192.0 i/s - 347.91x slower
+           typecheck:     7502.8 i/s - 565.36x slower
+```
+```
+# Test 2
+Ruby version: 2.2.3
+Ruby engine: jruby
+Ruby description: jruby 9.0.5.0 (2.2.3) 2016-01-26 7bee00d Java HotSpot(TM) 64-Bit Server VM 25.60-b23 on 1.8.0_60-b27 +jit [Windows 10-amd64]
+Rtype version: 0.1.1
+Sig version: 1.0.1
+Contracts version: 0.13.0
+Typecheck version: 0.1.2
+Warming up --------------------------------------
+                pure     7.943k i/100ms
+               rtype     1.060k i/100ms
+                 sig     1.565k i/100ms
+           contracts   365.000  i/100ms
+           typecheck   545.000  i/100ms
+Calculating -------------------------------------
+                pure      4.321M (±48.9%) i/s -     17.220M
+               rtype     56.584k (±22.5%) i/s -    266.060k
+                 sig     45.925k (±17.8%) i/s -    223.795k
+           contracts     17.338k (±20.8%) i/s -     82.490k
+           typecheck      8.449k (±16.5%) i/s -     41.420k
+
+Comparison:
+                pure:  4320949.8 i/s
+               rtype:    56584.5 i/s - 76.36x slower
+                 sig:    45925.4 i/s - 94.09x slower
+           contracts:    17337.9 i/s - 249.22x slower
+           typecheck:     8449.4 i/s - 511.39x slower
 ```
 
 ## Rubype, Sig
