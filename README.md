@@ -189,6 +189,31 @@ func [1]
 func [1, 2] # Your location is (1, 2). I will look for you. I will find you
 ```
 
+#### rtype with attr_accessor
+`rtype_accessor`
+
+You can use `rtype_accessor_self` for static accessor.
+
+```ruby
+require 'rtype'
+
+class Example
+  rtype_accessor :value, String
+  attr_accessor :value
+  def initialize
+    @value = 456
+  end
+end
+
+Example.new.value = 123
+# (Rtype::ArgumentTypeError) for 1st argument:
+# Expected 123 to be a String
+
+Example.new.value
+# (Rtype::ReturnTypeError) for return:
+# Expected 456 to be a String
+```
+
 #### Combined type
 ```ruby
 ### TEST 1 ###

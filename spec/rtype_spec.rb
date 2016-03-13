@@ -101,6 +101,35 @@ describe Rtype do
 		expect {TestClass::static_test_return}.to raise_error Rtype::ReturnTypeError
 	end
 
+	it 'Kernel#rtype_accessor' do
+		class TestClass
+			rtype_accessor :value, String
+			attr_accessor :value
+
+			def initialize
+				@value = 123
+			end
+		end
+		expect {TestClass.new.value = 123}.to raise_error Rtype::ArgumentTypeError
+		expect {TestClass.new.value}.to raise_error Rtype::ReturnTypeError
+	end
+
+	it 'Kernel#rtype_accessor_self' do
+		class TestClass
+			@@val = 123
+
+			rtype_accessor_self :value, String
+			def self.value=(val)
+				@@val = val
+			end
+			def self.value
+				@@val
+			end
+		end
+		expect {TestClass::value = 123}.to raise_error Rtype::ArgumentTypeError
+		expect {TestClass::value}.to raise_error Rtype::ReturnTypeError
+	end
+
 	describe 'Test type behaviors' do
 		describe 'Module' do
 			it "is right" do

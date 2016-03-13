@@ -15,7 +15,7 @@ private
 
 	def rtype(method_name, type_sig_info)
 		if is_a?(Module)
-			::Rtype.define_typed_method(self, method_name, type_sig_info)
+			::Rtype::define_typed_method(self, method_name, type_sig_info)
 		else
 			rtype_self(method_name, type_sig_info)
 		end
@@ -23,6 +23,18 @@ private
 
 	def rtype_self(method_name, type_sig_info)
 		::Rtype.define_typed_method(singleton_class, method_name, type_sig_info)
+	end
+
+	def rtype_accessor(accessor_name, type_behavior)
+		if is_a?(Module)
+			::Rtype::define_typed_accessor(self, accessor_name, type_behavior)
+		else
+			rtype_accessor_self(accessor_name, type_behavior)
+		end
+	end
+
+	def rtype_accessor_self(accessor_name, type_behavior)
+		::Rtype::define_typed_accessor(singleton_class, accessor_name, type_behavior)
 	end
 end
 

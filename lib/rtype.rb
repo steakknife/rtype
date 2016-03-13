@@ -59,6 +59,14 @@ module Rtype
 			end
 		end
 
+		def define_typed_accessor(owner, accessor_name, type_behavior)
+			getter = accessor_name.to_sym
+			setter = :"#{accessor_name}="
+			valid?(type_behavior, nil)
+			define_typed_method owner, getter, [] => type_behavior
+			define_typed_method owner, setter, [type_behavior] => Any
+		end
+
 		# validate argument type
 		def valid?(expected, value)
 			case expected
