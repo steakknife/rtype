@@ -1,5 +1,7 @@
 # Rtype: ruby with type
-[![Gem Version](https://badge.fury.io/rb/rtype.svg)](https://badge.fury.io/rb/rtype) [![Build Status](https://travis-ci.org/sputnikgugja/rtype.svg?branch=master)](https://travis-ci.org/sputnikgugja/rtype)
+[![Gem Version](https://badge.fury.io/rb/rtype.svg)](https://badge.fury.io/rb/rtype)
+[![Build Status](https://travis-ci.org/sputnikgugja/rtype.svg?branch=master)](https://travis-ci.org/sputnikgugja/rtype)
+[![Coverage Status](https://coveralls.io/repos/github/sputnikgugja/rtype/badge.svg?branch=master)](https://coveralls.io/github/sputnikgugja/rtype?branch=master)
 
 You can do the type checking in Ruby with this gem!
 
