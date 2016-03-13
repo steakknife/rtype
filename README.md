@@ -28,7 +28,7 @@ Test::invert(state: 0)
 ```
 
 ## Requirements
-- Ruby >= 2.0
+- Ruby >= 2.1
 
 ## Features
 - Very simple
