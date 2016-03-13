@@ -1,0 +1,13 @@
+sudo: false
+language: ruby
+script: bundle exec ruby spec/rtype_spec.rb
+cache:
+- bundler
+
+rvm:
+- 2.2
+- 2.1
+- 2.0
+- rbx-2
+- ruby-head
+- jruby-head
