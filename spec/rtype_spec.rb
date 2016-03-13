@@ -3,8 +3,20 @@ require_relative 'spec_helper'
 describe Rtype do
 	let(:klass) do
 		Class.new do
+			attr_accessor :value
+
+			def initialize
+				@value = 123
+			end
+
 			def return_arg(obj)
 				obj
+			end
+
+			def three_args(a, b, c)
+			end
+
+			def three_kwargs(a:, b:, c:)
 			end
 
 			def return_nil(obj)
@@ -432,6 +444,64 @@ describe Rtype do
 			it 'private' do
 				expect {instance.private_func}.to raise_error NoMethodError
 			end
+		end
+
+		context 'with empty argument signature' do
+			it 'accept any arguments' do
+				klass.send :rtype, :three_args, [] => Any
+				instance.three_args("abc", 123, 456)
+			end
+		end
+
+		context 'when args length is more than arg signature length' do
+			it 'type checking ignore rest args' do
+				klass.send :rtype, :three_args, [String] => Any
+				instance.three_args("abc", 123, 456)
+			end
+		end
+
+		context 'when keyword args contain a key not configured to rtype' do
+			it 'type checking ignore the key' do
+				klass.send :rtype, :three_kwargs, {a: String} => Any
+				instance.three_kwargs(a: "abc", b: 123, c: 456)
+			end
+		end
+	end
+
+	describe "Call Rtype`s static method directly" do
+		it 'Rtype::define_typed_method' do
+			Rtype::define_typed_method klass, :return_arg, [String] => Any
+			expect {instance.return_arg(123)}.to raise_error Rtype::ArgumentTypeError
+		end
+
+		it 'Rtype::define_typed_accessor' do
+			Rtype::define_typed_accessor klass, :value, String
+			expect { instance.value = 123 }.to raise_error Rtype::ArgumentTypeError
+			expect { instance.value }.to raise_error Rtype::ReturnTypeError
+		end
+		
+		it 'Rtype::valid?' do
+			expect {
+				Rtype::valid?("Invalid type behavior", "Test Value")
+			}.to raise_error Rtype::TypeSignatureError
+		end
+		
+		it 'Rtype::assert_arguments_type' do
+			expect {
+				Rtype::assert_arguments_type([Integer, String], [123, 123])
+			}.to raise_error Rtype::ArgumentTypeError
+		end
+		
+		it 'Rtype::assert_arguments_type_with_keywords' do
+			expect {
+				Rtype::assert_arguments_type_with_keywords([Integer, String], [123, "abc"], {arg: String}, {arg: 123})
+			}.to raise_error Rtype::ArgumentTypeError
+		end
+		
+		it 'Rtype::assert_return_type' do
+			expect {
+				Rtype::assert_return_type nil, "No nil"
+			}.to raise_error Rtype::ReturnTypeError
 		end
 	end
 end
