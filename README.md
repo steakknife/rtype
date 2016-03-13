@@ -354,6 +354,9 @@ Example.new.method(:test).return_type
 # => Any
 ```
 
+## Documentation
+[RubyDoc.info](http://www.rubydoc.info/gems/rtype)
+
 ## Benchmarks
 Result of `rake benchmark` ([source](https://github.com/sputnikgugja/rtype/tree/master/benchmark/benchmark.rb))
 
