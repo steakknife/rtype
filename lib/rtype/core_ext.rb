@@ -39,20 +39,24 @@ private
 end
 
 class Method
+	def typed?
+		!!::Rtype.type_signatures[owner][name]
+	end
+
 	def type_signature
 		::Rtype.type_signatures[owner][name]
 	end
 
 	def type_info
-		type_signature.info
+		::Rtype.type_signatures[owner][name].info
 	end
 
 	def argument_type
-		type_signature.argument_type
+		::Rtype.type_signatures[owner][name].argument_type
 	end
 
 	def return_type
-		type_signature.return_type
+		::Rtype.type_signatures[owner][name].return_type
 	end
 end
 
