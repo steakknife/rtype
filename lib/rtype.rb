@@ -45,13 +45,13 @@ module Rtype
 			sig.return_type = return_sig
 			@@type_signatures[owner][method_name] = sig
 
-			owner.method(:_rtype_proxy).call.send :define_method, method_name do |*args, **kwargs, &block|
+			# `send` is faster than `method(...).call`
+			owner.send(:_rtype_proxy).send :define_method, method_name do |*args, **kwargs, &block|
 				if kwargs.empty?
 					::Rtype.assert_arguments_type(expected_args, args)
 					result = super(*args, &block)
 				else
-					::Rtype.assert_arguments_type(expected_args, args)
-					::Rtype.assert_keyword_arguments_type(expected_kwargs, kwargs)
+					::Rtype.assert_arguments_type_with_keywords(expected_args, args, expected_kwargs, kwargs)
 					result = super(*args, **kwargs, &block)
 				end
 				::Rtype.assert_return_type(return_sig, result)
@@ -70,8 +70,6 @@ module Rtype
 		# validate argument type
 		def valid?(expected, value)
 			case expected
-			when Rtype::Behavior::Base
-				expected.valid? value
 			when Module
 				value.is_a? expected
 			when Symbol
@@ -91,6 +89,8 @@ module Rtype
 				!!value
 			when false
 				!value
+			when Rtype::Behavior::Base
+				expected.valid? value
 			else
 				raise TypeSignatureError, "Invalid type signature: Unknown type behavior #{expected}"
 			end
@@ -101,8 +101,10 @@ module Rtype
 		end
 
 		def assert_arguments_type(expected_args, args)
-			args.each_with_index do |value, idx|
-				expected = expected_args[idx]
+			# `length.times` is faster than `each_with_index`
+			args.length.times do |i|
+				expected = expected_args[i]
+				value = args[i]
 				unless expected.nil?
 					unless valid?(expected, value)
 						raise ArgumentTypeError, "for #{(idx+1).ordinalize} argument:\n" + type_error_message(expected, value)
@@ -110,8 +112,29 @@ module Rtype
 				end
 			end
 		end
-
+=begin
 		def assert_keyword_arguments_type(expected_kwargs, kwargs)
+			kwargs.each do |key, value|
+				expected = expected_kwargs[key]
+				unless expected.nil?
+					unless valid?(expected, value)
+						raise ArgumentTypeError, "for '#{key}' argument:\n" + type_error_message(expected, value)
+					end
+				end
+			end
+		end
+=end
+		def assert_arguments_type_with_keywords(expected_args, args, expected_kwargs, kwargs)
+			# `length.times` is faster than `each_with_index`
+			args.length.times do |i|
+				expected = expected_args[i]
+				value = args[i]
+				unless expected.nil?
+					unless valid?(expected, value)
+						raise ArgumentTypeError, "for #{(idx+1).ordinalize} argument:\n" + type_error_message(expected, value)
+					end
+				end
+			end
 			kwargs.each do |key, value|
 				expected = expected_kwargs[key]
 				unless expected.nil?
