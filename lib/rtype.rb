@@ -107,7 +107,7 @@ module Rtype
 				value = args[i]
 				unless expected.nil?
 					unless valid?(expected, value)
-						raise ArgumentTypeError, "for #{(idx+1).ordinalize} argument:\n" + type_error_message(expected, value)
+						raise ArgumentTypeError, "for #{(i+1).ordinalize} argument:\n" + type_error_message(expected, value)
 					end
 				end
 			end
@@ -131,7 +131,7 @@ module Rtype
 				value = args[i]
 				unless expected.nil?
 					unless valid?(expected, value)
-						raise ArgumentTypeError, "for #{(idx+1).ordinalize} argument:\n" + type_error_message(expected, value)
+						raise ArgumentTypeError, "for #{(i+1).ordinalize} argument:\n" + type_error_message(expected, value)
 					end
 				end
 			end
