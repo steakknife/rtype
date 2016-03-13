@@ -59,6 +59,7 @@ module Rtype
 			end
 		end
 
+		# validate argument type
 		def valid?(expected, value)
 			case expected
 			when Rtype::Behavior::Base

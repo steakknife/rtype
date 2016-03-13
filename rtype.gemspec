@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.email = ["sputnikgugja@gmail.com"]
   s.homepage = "https://github.com/sputnikgugja/rtype"
   s.summary = "Ruby with type"
-  s.description = "Type checking for ruby"
+  s.description = "Ruby with type"
   s.licenses = 'MIT'
 
   s.files = Dir["benchmark/*", "{lib}/**/*", "Rakefile", "Gemfile", "README.md", "LICENSE"]

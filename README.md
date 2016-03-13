@@ -48,7 +48,7 @@ require 'rtype'
 
 ### Supported Type Behaviors
 - `Module`
-  - Value must be an instance of this module/class or one of it's superclasses
+  - Value must be an instance of this module/class or one of its superclasses
   - `Any` : An alias for `BasicObject` (means Any Object)
   - `Boolean` : `true` or `false`
 - `Symbol`
@@ -60,6 +60,8 @@ require 'rtype'
 - `Array` (tuple)
   - Value must be an array
   - Each of value's elements must be valid
+  - Value's length must be equal to the array's length
+  - Of course, nested array works
   - Example: [Array](#array)
   - This can be used as a tuple
 - `Proc`
