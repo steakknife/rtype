@@ -361,42 +361,6 @@ Example.new.method(:test).return_type
 Result of `rake benchmark` ([source](https://github.com/sputnikgugja/rtype/tree/master/benchmark/benchmark.rb))
 
 ### MRI
-Rtype is fast as Rubype.
-While Rubype use C extension, Rtype is **pure-ruby** gem!
-
-```
-Ruby version: 2.2.4
-Ruby engine: ruby
-Ruby description: ruby 2.2.4p230 (2015-12-16 revision 53155) [i386-mingw32]
-Rtype version: 0.1.1
-Rubype version: 0.3.1
-Sig version: 1.0.1
-Contracts version: 0.13.0
-Typecheck version: 0.1.2
-Warming up --------------------------------------
-                pure   110.387k i/100ms
-               rtype    15.769k i/100ms
-              rubype    15.757k i/100ms
-                 sig    11.209k i/100ms
-           contracts     5.105k i/100ms
-           typecheck     4.004k i/100ms
-Calculating -------------------------------------
-                pure      4.955M (±34.9%) i/s -     22.188M
-               rtype    195.944k (± 6.5%) i/s -    977.678k
-              rubype    195.819k (± 6.6%) i/s -    976.934k
-                 sig    132.173k (± 9.1%) i/s -    661.331k
-           contracts     55.015k (± 5.5%) i/s -    275.670k
-           typecheck     43.205k (± 6.3%) i/s -    216.216k
-
-Comparison:
-                pure:  4954754.4 i/s
-               rtype:   195943.7 i/s - 25.29x slower
-              rubype:   195819.2 i/s - 25.30x slower
-                 sig:   132172.9 i/s - 37.49x slower
-           contracts:    55015.3 i/s - 90.06x slower
-           typecheck:    43204.8 i/s - 114.68x slower
-```
-
 Rtype is 1.56x faster than Sig and 2.85x faster than Contracts
 
 ```
