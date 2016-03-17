@@ -361,8 +361,6 @@ Example.new.method(:test).return_type
 Result of `rake benchmark` ([source](https://github.com/sputnikgugja/rtype/tree/master/benchmark/benchmark.rb))
 
 ### MRI
-Rtype is 1.56x faster than Sig and 2.85x faster than Contracts
-
 ```
 Ruby version: 2.1.7
 Ruby engine: ruby
@@ -393,8 +391,6 @@ Comparison:
 ```
 
 ### JRuby
-Rtype is 1.23x ~ 1.90x faster than Sig and 3.26x ~ 4.57x faster than Contracts
-
 ```
 # Test 1
 Ruby version: 2.2.3
