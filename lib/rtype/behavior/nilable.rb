@@ -6,7 +6,7 @@ module Rtype
 			end
 
 			def valid?(value)
-				value.nil? || Rtype::valid?(e, value)
+				value.nil? || Rtype::valid?(@type, value)
 			end
 
 			def error_message(value)
