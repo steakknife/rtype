@@ -10,6 +10,3 @@ desc "Compare with pure ruby and other gems"
 task :benchmark do
   ruby "benchmark/benchmark.rb"
 end
-
-require 'rake/extensiontask'
-Rake::ExtensionTask.new('rtype/rtype_native')

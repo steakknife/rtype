@@ -4,9 +4,6 @@ script: bundle exec ruby spec/rtype_spec.rb
 cache:
 - bundler
 
-before_install:
-- gem install bundler -v "~> 1.10"
-
 rvm:
 - 2.2
 - 2.1
