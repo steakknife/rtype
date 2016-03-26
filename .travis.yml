@@ -4,11 +4,16 @@ script: bundle exec ruby spec/rtype_spec.rb
 cache:
 - bundler
 
+before_install:
+- gem install bundler -v "~> 1.10"
+
 rvm:
+- 2.3
 - 2.2
 - 2.1
 - rbx-2
 - ruby-head
+- jruby-9.0.5.0
 
 gemfile:
 - Gemfile
