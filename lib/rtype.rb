@@ -1,3 +1,10 @@
+begin
+	require "rtype/rtype_native"
+	puts "Rtype with native extension"
+rescue LoadError
+	puts "Rtype without native extension"
+end
+
 require_relative 'rtype/core_ext'
 require_relative 'rtype/version'
 require_relative 'rtype/type_signature_error'
@@ -45,18 +52,7 @@ module Rtype
 			sig.return_type = return_sig
 			@@type_signatures[owner][method_name] = sig
 
-			# `send` is faster than `method(...).call`
-			owner.send(:_rtype_proxy).send :define_method, method_name do |*args, **kwargs, &block|
-				if kwargs.empty?
-					::Rtype.assert_arguments_type(expected_args, args)
-					result = super(*args, &block)
-				else
-					::Rtype.assert_arguments_type_with_keywords(expected_args, args, expected_kwargs, kwargs)
-					result = super(*args, **kwargs, &block)
-				end
-				::Rtype.assert_return_type(return_sig, result)
-				result
-			end
+			define_typed_method_to_proxy(owner, method_name, expected_args, expected_kwargs, return_sig)
 		end
 
 		def define_typed_accessor(owner, accessor_name, type_behavior)
@@ -67,51 +63,10 @@ module Rtype
 			define_typed_method owner, setter, [type_behavior] => Any
 		end
 
-		# validate argument type
-		def valid?(expected, value)
-			case expected
-			when Module
-				value.is_a? expected
-			when Symbol
-				value.respond_to? expected
-			when Regexp
-				!!(expected =~ value.to_s)
-			when Range
-				expected.include?(value)
-			when Array
-				return false unless value.is_a?(Array)
-				return false unless expected.length == value.length
-				idx = -1
-				expected.all? { |e| idx += 1; valid?(e, value[idx]) }
-			when Proc
-				!!expected.call(value)
-			when true
-				!!value
-			when false
-				!value
-			when Rtype::Behavior::Base
-				expected.valid? value
-			else
-				raise TypeSignatureError, "Invalid type signature: Unknown type behavior #{expected}"
-			end
-		end
-
 		def type_signatures
 			@@type_signatures
 		end
 
-		def assert_arguments_type(expected_args, args)
-			# `length.times` is faster than `each_with_index`
-			args.length.times do |i|
-				expected = expected_args[i]
-				value = args[i]
-				unless expected.nil?
-					unless valid?(expected, value)
-						raise ArgumentTypeError, "for #{(i+1).ordinalize} argument:\n" + type_error_message(expected, value)
-					end
-				end
-			end
-		end
 =begin
 		def assert_keyword_arguments_type(expected_kwargs, kwargs)
 			kwargs.each do |key, value|
@@ -124,38 +79,23 @@ module Rtype
 			end
 		end
 =end
-		def assert_arguments_type_with_keywords(expected_args, args, expected_kwargs, kwargs)
-			# `length.times` is faster than `each_with_index`
-			args.length.times do |i|
-				expected = expected_args[i]
-				value = args[i]
-				unless expected.nil?
-					unless valid?(expected, value)
-						raise ArgumentTypeError, "for #{(i+1).ordinalize} argument:\n" + type_error_message(expected, value)
-					end
-				end
-			end
-			kwargs.each do |key, value|
-				expected = expected_kwargs[key]
-				unless expected.nil?
-					unless valid?(expected, value)
-						raise ArgumentTypeError, "for '#{key}' argument:\n" + type_error_message(expected, value)
-					end
-				end
-			end
+
+		def arg_type_error_message(idx, expected, value)
+			"#{arg_message(idx)}\n" + type_error_message(expected, value)
 		end
 
-		def assert_return_type(expected, result)
-			if expected.nil?
-				unless result.nil?
-					raise ReturnTypeError, "for return:\n" + type_error_message(expected, result)
-				end
-			else
-				unless valid?(expected, result)
-					raise ReturnTypeError, "for return:\n" + type_error_message(expected, result)
-				end
-			end
+		def kwarg_type_error_message(key, expected, value)
+			"#{kwarg_message(key)}\n" + type_error_message(expected, value)
 		end
+
+		def arg_message(idx)
+			"for #{(idx+1).ordinalize} argument:"
+		end
+
+		def kwarg_message(key)
+			"for '#{key}' argument:"
+		end
+
 
 		def type_error_message(expected, value)
 			case expected
@@ -199,5 +139,104 @@ module Rtype
 			arg_sig = hash.first[0]
 			arg_sig.is_a?(Array) || arg_sig.is_a?(Hash)
 		end
+
+		def define_typed_method_to_proxy(owner, method_name, expected_args, expected_kwargs, return_sig)
+			# `send` is faster than `method(...).call`
+			owner.send(:_rtype_proxy).send :define_method, method_name do |*args, **kwargs, &block|
+				if kwargs.empty?
+					::Rtype.assert_arguments_type(expected_args, args)
+					result = super(*args, &block)
+				else
+					::Rtype.assert_arguments_type_with_keywords(expected_args, args, expected_kwargs, kwargs)
+					result = super(*args, **kwargs, &block)
+				end
+				::Rtype.assert_return_type(return_sig, result)
+				result
+			end
+			nil
+		end
+	end
+
+	unless self.respond_to?(:valid?)
+	# validate argument type
+	def self.valid?(expected, value)
+		case expected
+		when Module
+			value.is_a? expected
+		when Symbol
+			value.respond_to? expected
+		when Regexp
+			!!(expected =~ value.to_s)
+		when Range
+			expected.include?(value)
+		when Array
+			return false unless value.is_a?(Array)
+			return false unless expected.length == value.length
+			idx = -1
+			expected.all? { |e| idx += 1; valid?(e, value[idx]) }
+		when Proc
+			!!expected.call(value)
+		when true
+			!!value
+		when false
+			!value
+		when Rtype::Behavior::Base
+			expected.valid? value
+		else
+			raise TypeSignatureError, "Invalid type signature: Unknown type behavior #{expected}"
+		end
+	end
+	end
+
+	unless self.respond_to?(:assert_arguments_type)
+	def self.assert_arguments_type(expected_args, args)
+		# `length.times` is faster than `each_with_index`
+		args.length.times do |i|
+			expected = expected_args[i]
+			value = args[i]
+			unless expected.nil?
+				unless valid?(expected, value)
+					raise ArgumentTypeError, "for #{(i+1).ordinalize} argument:\n" + type_error_message(expected, value)
+				end
+			end
+		end
+	end
+	end
+
+	unless self.respond_to?(:assert_arguments_type_with_keywords)
+	def self.assert_arguments_type_with_keywords(expected_args, args, expected_kwargs, kwargs)
+		# `length.times` is faster than `each_with_index`
+		args.length.times do |i|
+			expected = expected_args[i]
+			value = args[i]
+			unless expected.nil?
+				unless valid?(expected, value)
+					raise ArgumentTypeError, "#{arg_message(idx)}\n" + type_error_message(expected, value)
+				end
+			end
+		end
+		kwargs.each do |key, value|
+			expected = expected_kwargs[key]
+			unless expected.nil?
+				unless valid?(expected, value)
+					raise ArgumentTypeError, "#{kwarg_message(key)}\n" + type_error_message(expected, value)
+				end
+			end
+		end
+	end
+	end
+
+	unless self.respond_to?(:assert_return_type)
+	def self.assert_return_type(expected, result)
+		if expected.nil?
+			unless result.nil?
+				raise ReturnTypeError, "for return:\n" + type_error_message(expected, result)
+			end
+		else
+			unless valid?(expected, result)
+				raise ReturnTypeError, "for return:\n" + type_error_message(expected, result)
+			end
+		end
+	end
 	end
 end

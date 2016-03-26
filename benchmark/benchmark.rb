@@ -1,6 +1,9 @@
 require 'benchmark/ips'
 
-require_relative '../lib/rtype'
+is_mri = RUBY_ENGINE == 'ruby'
+
+require "rtype"
+require "rubype" if is_mri
 require "sig"
 require "contracts"
 require "contracts/version"
@@ -11,6 +14,7 @@ puts "Ruby engine: #{RUBY_ENGINE}"
 puts "Ruby description: #{RUBY_DESCRIPTION}"
 
 puts "Rtype version: #{Rtype::VERSION}"
+puts "Rubype version: #{Rubype::VERSION}" if is_mri
 puts "Sig version: #{Sig::VERSION}"
 puts "Contracts version: #{Contracts::VERSION}"
 puts "Typecheck version: #{Typecheck::VERSION}"
@@ -45,6 +49,25 @@ class RtypeTest
 	end
 end
 rtype_obj = RtypeTest.new
+
+if is_mri
+	class RubypeTest
+		def sum(x, y)
+			x + y
+		end
+		typesig :sum, [Numeric, Numeric] => Numeric
+
+		def mul(x, y)
+			x * y
+		end
+		typesig :mul, [:to_i, :to_i] => Numeric
+
+		def args(a, b, c, d)
+		end
+		typesig :args, [Integer, Numeric, String, :to_i] => Any
+	end
+	rubype_obj = RubypeTest.new
+end
 
 class SigTest
 	sig [Numeric, Numeric], Numeric,
@@ -123,6 +146,18 @@ Benchmark.ips do |x|
 		end
 	end
 
+	if is_mri
+		x.report("rubype") do |times|
+			i = 0
+			while i < times
+				rubype_obj.sum(1, 2)
+				rubype_obj.mul(1, 2)
+				rubype_obj.args(1, 2, "c", 4)
+				i += 1
+			end
+		end
+	end
+	
 	x.report("sig") do |times|
 		i = 0
 		while i < times

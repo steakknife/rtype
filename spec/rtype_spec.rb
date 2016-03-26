@@ -277,6 +277,40 @@ describe Rtype do
 				}.to raise_error Rtype::TypeSignatureError
 			end
 		end
+
+		describe 'Special type behaviors' do
+			it 'Rtype::Behavior::And' do
+				klass.send :rtype, :return_nil, [Rtype.and(:to_i, :chars)] => nil
+				instance.return_nil("Hello")
+				expect {instance.return_nil(123)}.to raise_error Rtype::ArgumentTypeError
+			end
+
+			it 'Rtype::Behavior::Or' do
+				klass.send :rtype, :return_nil, [Rtype.or(Integer, String)] => nil
+				instance.return_nil(123)
+				instance.return_nil("abc")
+				expect {instance.return_nil(nil)}.to raise_error Rtype::ArgumentTypeError
+			end
+
+			it 'Rtype::Behavior::Nilable' do
+				klass.send :rtype, :return_nil, [Rtype.nilable(Integer)] => nil
+				instance.return_nil(nil)
+				instance.return_nil(123)
+				expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+			end
+
+			it 'Rtype::Behavior::Not' do
+				klass.send :rtype, :return_nil, [Rtype.not(String)] => nil
+				instance.return_nil(123)
+				expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+			end
+
+			it 'Rtype::Behavior::Xor' do
+				klass.send :rtype, :return_nil, [Rtype.xor(:to_i, String)] => nil
+				instance.return_nil(123)
+				expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+			end
+		end
 	end
 
 	describe 'Signature' do

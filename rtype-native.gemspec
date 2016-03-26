@@ -5,18 +5,20 @@ require "rtype/version"
 
 # Describe your gem and declare its dependencies:
 Gem::Specification.new do |s|
-  s.name = "rtype"
+  s.name = "rtype-native"
   s.version = Rtype::VERSION
   s.authors = ["Sputnik Gugja"]
   s.email = ["sputnikgugja@gmail.com"]
   s.homepage = "https://github.com/sputnikgugja/rtype"
-  s.summary = "Ruby with type"
-  s.description = "Ruby with type"
+  s.summary = "C native extension for Rtype"
+  s.description = "C native extension for Rtype"
   s.licenses = 'MIT'
 
   s.test_files = Dir["{test,spec}/**/*"]
     # s.executables = s.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   s.require_paths = ["lib"] # by default it is ["lib"]
+
+  s.add_dependency "rtype", Rtype::VERSION
 
   # s.add_development_dependency "bundler", "~> 1.10"
   s.add_development_dependency "rake", "~> 10.0"
@@ -25,5 +27,6 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = "~> 2.1"
 
-  s.files = Dir["benchmark/*", "{lib}/**/*", "Rakefile", "Gemfile", "README.md", "LICENSE"]
+  s.files = Dir["benchmark/*", "Rakefile", "Gemfile", "README.md", "LICENSE", 'ext/**/*']
+  s.extensions = Dir['ext/**/extconf.rb']
 end
