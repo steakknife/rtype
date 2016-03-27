@@ -31,7 +31,10 @@ Test::invert(state: 0)
 
 ## Requirements
 - Ruby >= 2.1
-- MRI or RBX if native extension is used. Rtype itself without it is pure-ruby gem, therefore you can use Rtype in JRuby, etc.
+- MRI or RBX
+  - If C native extension is used, otherwise it is not required
+- JRuby
+  - If Java extension is used, otherwise it is not required
 
 ## Features
 - Provide type checking for argument and return
@@ -49,12 +52,29 @@ require 'rtype'
 ```
 
 ### Native extension
-Rtype itself is pure-ruby gem. but you can make it more faster by native extension.
+Rtype itself is pure-ruby gem. but you can make it more faster by using native extension.
 
-Just run `gem install rtype-native` or add `gem 'rtype-native'` to your `Gemfile`, then Rtype use it.
-(Do not `require 'rtype-native'`)
+#### Native extension for MRI, RBX
+Just run
+```ruby
+gem install rtype-native
+```
+or add to your `Gemfile`:
+```ruby
+gem 'rtype-native'
+```
+then, Rtype use it. (Do not `require 'rtype-native'`)
 
-It is only for MRI or RBX. JRuby extension not supported yet.
+#### Java extension for JRuby
+Just run
+```ruby
+gem install rtype-java
+```
+or add to your `Gemfile`:
+```ruby
+gem 'rtype-java'
+```
+then, Rtype use it. (Do not `require 'rtype-java'`)
 
 ## Usage
 
@@ -370,68 +390,70 @@ Result of `rake benchmark` ([source](https://github.com/sputnikgugja/rtype/tree/
 
 ### MRI
 ```
+Rtype with C native extension
 Ruby version: 2.1.7
 Ruby engine: ruby
 Ruby description: ruby 2.1.7p400 (2015-08-18 revision 51632) [x64-mingw32]
-Rtype version: 0.2.0
+Rtype version: 0.3.0
 Rubype version: 0.3.1
 Sig version: 1.0.1
 Contracts version: 0.13.0
 Typecheck version: 0.1.2
 Warming up --------------------------------------
-                pure    85.600k i/100ms
-               rtype    25.735k i/100ms
-              rubype    20.922k i/100ms
-                 sig     8.960k i/100ms
-           contracts     4.659k i/100ms
-           typecheck     1.102k i/100ms
+                pure    85.328k i/100ms
+               rtype    25.665k i/100ms
+              rubype    21.414k i/100ms
+                 sig     8.921k i/100ms
+           contracts     4.638k i/100ms
+           typecheck     1.110k i/100ms
 Calculating -------------------------------------
-                pure      3.273M (± 2.4%) i/s -     16.435M
-               rtype    340.376k (± 1.9%) i/s -      1.724M
-              rubype    268.253k (± 4.2%) i/s -      1.339M
-                 sig    100.050k (± 1.9%) i/s -    501.760k
-           contracts     50.027k (± 2.0%) i/s -    251.586k
-           typecheck     11.317k (± 1.4%) i/s -     57.304k
+                pure      3.282M (± 2.7%) i/s -     16.468M
+               rtype    339.065k (± 2.6%) i/s -      1.720M
+              rubype    266.893k (± 5.9%) i/s -      1.349M
+                 sig     99.952k (± 2.1%) i/s -    499.576k
+           contracts     49.693k (± 1.5%) i/s -    250.452k
+           typecheck     11.356k (± 1.6%) i/s -     57.720k
 
 Comparison:
-                pure:  3272978.0 i/s
-               rtype:   340375.8 i/s - 9.62x slower
-              rubype:   268252.5 i/s - 12.20x slower
-                 sig:   100050.1 i/s - 32.71x slower
-           contracts:    50026.9 i/s - 65.42x slower
-           typecheck:    11317.1 i/s - 289.21x slower
+                pure:  3282431.9 i/s
+               rtype:   339064.9 i/s - 9.68x slower
+              rubype:   266892.9 i/s - 12.30x slower
+                 sig:    99952.2 i/s - 32.84x slower
+           contracts:    49693.0 i/s - 66.05x slower
+           typecheck:    11355.9 i/s - 289.05x slower
 ```
 
 ### JRuby
 Without Rubype that doesn't support JRuby
 
 ```
+Rtype with Java extension
 Ruby version: 2.2.3
 Ruby engine: jruby
 Ruby description: jruby 9.0.5.0 (2.2.3) 2016-01-26 7bee00d Java HotSpot(TM) 64-Bit Server VM 25.60-b23 on 1.8.0_60-b27 +jit [Windows 10-amd64]
-Rtype version: 0.2.0
+Rtype version: 0.3.0
 Sig version: 1.0.1
 Contracts version: 0.13.0
 Typecheck version: 0.1.2
 Warming up --------------------------------------
-                pure    29.127k i/100ms
-               rtype     4.566k i/100ms
-                 sig     4.162k i/100ms
-           contracts   776.000  i/100ms
-           typecheck   981.000  i/100ms
+                pure     9.994k i/100ms
+               rtype     6.181k i/100ms
+                 sig     4.041k i/100ms
+           contracts   951.000  i/100ms
+           typecheck   970.000  i/100ms
 Calculating -------------------------------------
-                pure      6.705M (±12.0%) i/s -     32.826M
-               rtype     89.262k (± 3.3%) i/s -    447.468k
-                 sig     74.070k (± 2.0%) i/s -    370.418k
-           contracts     25.399k (± 2.9%) i/s -    127.264k
-           typecheck     12.461k (± 9.0%) i/s -     61.803k
+                pure      7.128M (?±35.6%) i/s -     30.831M
+               rtype    121.556k (?± 6.2%) i/s -    605.738k
+                 sig     72.187k (?± 6.4%) i/s -    359.649k
+           contracts     24.984k (?± 3.9%) i/s -    125.532k
+           typecheck     12.041k (?± 9.5%) i/s -     60.140k
 
 Comparison:
-                pure:  6705166.5 i/s
-               rtype:    89262.5 i/s - 75.12x slower
-                 sig:    74070.1 i/s - 90.52x slower
-           contracts:    25398.9 i/s - 263.99x slower
-           typecheck:    12460.7 i/s - 538.10x slower
+                pure:  7128373.0 i/s
+               rtype:   121555.8 i/s - 58.64x slower
+                 sig:    72186.8 i/s - 98.75x slower
+           contracts:    24984.5 i/s - 285.31x slower
+           typecheck:    12041.0 i/s - 592.01x slower
 ```
 
 ## Rubype, Sig
