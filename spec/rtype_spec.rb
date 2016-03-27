@@ -236,29 +236,35 @@ describe Rtype do
 		describe 'true' do
 			it "is right" do
 				klass.send :rtype, :return_arg, [true] => Any
+				instance.return_arg(true)
 				instance.return_arg(123)
 			end
 			it "is wrong args" do
 				klass.send :rtype, :return_arg, [true] => Any
+				expect {instance.return_arg(false)}.to raise_error Rtype::ArgumentTypeError
 				expect {instance.return_arg(nil)}.to raise_error Rtype::ArgumentTypeError
 			end
 			it "is wrong result" do
 				klass.send :rtype, :return_nil, [Any] => true
-				expect {instance.return_nil(123)}.to raise_error Rtype::ReturnTypeError
+				expect {instance.return_arg(false)}.to raise_error Rtype::ReturnTypeError
+				expect {instance.return_arg(nil)}.to raise_error Rtype::ReturnTypeError
 			end
 		end
 
 		describe 'false' do
 			it "is right" do
 				klass.send :rtype, :return_arg, [false] => Any
+				instance.return_arg(false)
 				instance.return_arg(nil)
 			end
 			it "is wrong args" do
 				klass.send :rtype, :return_arg, [false] => Any
+				expect {instance.return_arg(true)}.to raise_error Rtype::ArgumentTypeError
 				expect {instance.return_arg(123)}.to raise_error Rtype::ArgumentTypeError
 			end
 			it "is wrong result" do
 				klass.send :rtype, :return_arg, [Any] => false
+				expect {instance.return_arg(true)}.to raise_error Rtype::ReturnTypeError
 				expect {instance.return_arg(123)}.to raise_error Rtype::ReturnTypeError
 			end
 		end
