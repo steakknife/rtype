@@ -245,7 +245,7 @@ describe Rtype do
 				expect {instance.return_arg(nil)}.to raise_error Rtype::ArgumentTypeError
 			end
 			it "is wrong result" do
-				klass.send :rtype, :return_nil, [Any] => true
+				klass.send :rtype, :return_arg, [Any] => true
 				expect {instance.return_arg(false)}.to raise_error Rtype::ReturnTypeError
 				expect {instance.return_arg(nil)}.to raise_error Rtype::ReturnTypeError
 			end
