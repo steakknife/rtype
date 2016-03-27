@@ -31,7 +31,7 @@ Test::invert(state: 0)
 
 ## Requirements
 - Ruby >= 2.1
-- MRI or RBX
+- MRI
   - If C native extension is used, otherwise it is not required
 - JRuby
   - If Java extension is used, otherwise it is not required
@@ -54,7 +54,7 @@ require 'rtype'
 ### Native extension
 Rtype itself is pure-ruby gem. but you can make it more faster by using native extension.
 
-#### Native extension for MRI, RBX
+#### Native extension for MRI
 Just run
 ```ruby
 gem install rtype-native
