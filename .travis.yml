@@ -13,3 +13,4 @@ rvm:
 gemfile:
 - Gemfile
 - Gemfile-native
+- Gemfile-java
