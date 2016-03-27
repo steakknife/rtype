@@ -95,13 +95,13 @@ rb_rtype_assert_return_type(VALUE self, VALUE expected, VALUE result) {
 	if(expected == Qnil) {
 		if(result != Qnil) {
 			VALUE msg = rb_funcall(rb_mRtype, rb_intern("type_error_message"), 2, expected, result);
-			rb_raise(rb_eRtypeReturnTypeError, "for return:\n %s", StringValueCStr(msg));
+			rb_raise(rb_eRtypeReturnTypeError, "for return:\n%s", StringValueCStr(msg));
 		}
 	}
 	else {
 		if( !RTEST(rb_rtype_valid(self, expected, result)) ) {
 			VALUE msg = rb_funcall(rb_mRtype, rb_intern("type_error_message"), 2, expected, result);
-			rb_raise(rb_eRtypeReturnTypeError, "for return:\n %s", StringValueCStr(msg));
+			rb_raise(rb_eRtypeReturnTypeError, "for return:\n%s", StringValueCStr(msg));
 		}
 	}
 	return Qnil;
