@@ -1,6 +1,5 @@
 Gemfile.lock
 *.gem
 coverage
-# /ext/rtype/java/nbproject/private/
-/ext/rtype/java/**/*
-!/ext/rtype/java/src/
+ext/rtype/java/*
+!ext/rtype/java/src
