@@ -115,8 +115,8 @@ void Init_rtype_native(void) {
 	rb_eRtypeTypeSignatureError = rb_define_class_under(rb_mRtype, "TypeSignatureError", rb_eArgError);
 	rb_eRtypeReturnTypeError = rb_define_class_under(rb_mRtype, "ReturnTypeError", rb_eStandardError);
 
-	rb_define_singleton_method(rb_mRtype, "valid?", rb_rtype_valid, 2);
-	rb_define_singleton_method(rb_mRtype, "assert_arguments_type", rb_rtype_assert_arguments_type, 2);
-	rb_define_singleton_method(rb_mRtype, "assert_arguments_type_with_keywords", rb_rtype_assert_arguments_type_with_keywords, 4);
-	rb_define_singleton_method(rb_mRtype, "assert_return_type", rb_rtype_assert_return_type, 2);
+	rb_define_method(rb_mRtype, "valid?", rb_rtype_valid, 2);
+	rb_define_method(rb_mRtype, "assert_arguments_type", rb_rtype_assert_arguments_type, 2);
+	rb_define_method(rb_mRtype, "assert_arguments_type_with_keywords", rb_rtype_assert_arguments_type_with_keywords, 4);
+	rb_define_method(rb_mRtype, "assert_return_type", rb_rtype_assert_return_type, 2);
 }
