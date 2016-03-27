@@ -37,10 +37,10 @@ rb_rtype_valid(VALUE self, VALUE expected, VALUE value) {
 		case T_FALSE:
 			return !RTEST(value) ? Qtrue : Qfalse;
 		default:
-			if(CLASS_OF(expected) == rb_cRange) {
+			if(rb_obj_is_kind_of(expected, rb_cRange)) {
 				return rb_funcall(expected, rb_intern("include?"), 1, value);
 			}
-			else if(CLASS_OF(expected) == rb_cProc) {
+			else if(rb_obj_is_kind_of(expected, rb_cProc)) {
 				return RTEST(rb_funcall(expected, rb_intern("call"), 1, value)) ? Qtrue : Qfalse;
 			}
 			else if( RTEST(rb_obj_is_kind_of(expected, rb_cRtypeBehaviorBase)) ) {
