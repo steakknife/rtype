@@ -166,7 +166,8 @@ private
 		end
 		nil
 	end
-
+	
+public
 	unless respond_to?(:valid?)
 	# validate argument type
 	def valid?(expected, value)
