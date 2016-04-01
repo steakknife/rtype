@@ -660,6 +660,15 @@ describe Rtype do
 				instance.three_kwargs(a: "abc", b: 123, c: 456)
 			end
 		end
+
+		context 'when hash type argument contain a key not configured to rtype' do
+			it 'raises error' do
+				klass.send :rtype, :return_arg, [{a: String}, {}] => Any
+				expect {
+					instance.return_arg({a: "str", b: "str"}, {})
+				}.to raise_error Rtype::ArgumentTypeError
+			end
+		end
 	end
 
 	describe "Call Rtype`s static method directly" do
