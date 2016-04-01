@@ -35,6 +35,9 @@ public class Rtype {
 	public static RubyClass range;
 	public static RubyClass proc;
 	
+	public static RubyBoolean qtrue;
+	public static RubyBoolean qfalse;
+	
 	public static void init(Ruby ruby) {
 		Rtype.ruby = ruby;
 		
@@ -59,13 +62,16 @@ public class Rtype {
 		range = ruby.getRange();
 		proc = ruby.getProc();
 		
+		qtrue = ruby.getTrue();
+		qfalse = ruby.getFalse();
+		
 		rtype.defineAnnotatedMethods(Rtype.class);
 	}
 	
 	@JRubyMethod(name = "valid?")
 	public static IRubyObject valid(ThreadContext context, IRubyObject self,
 			IRubyObject expected, IRubyObject value) {
-		return validInternal(context, self, expected, value) ? ruby.getTrue() : ruby.getFalse();
+		return validInternal(context, self, expected, value) ? qtrue : qfalse;
 	}
 	
 	public static boolean validInternal(ThreadContext context, IRubyObject self,
