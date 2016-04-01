@@ -13,6 +13,9 @@ describe Rtype do
 				obj
 			end
 
+			def two_args(a, b)
+			end
+
 			def three_args(a, b, c)
 			end
 
@@ -207,14 +210,47 @@ describe Rtype do
 			it "is right" do
 				klass.send :rtype, :return_arg, [[:to_i, :to_i]] => Any
 				instance.return_arg([123, 456])
+
+				klass.send :rtype, :two_args, [[:to_i], [:to_i]] => Any
+				instance.two_args([123], [456])
 			end
 			it "is wrong args" do
 				klass.send :rtype, :return_arg, [[:to_i, :to_i]] => Any
-				expect {instance.return_arg([123, true])}.to raise_error Rtype::ArgumentTypeError
+				expect {
+					instance.return_arg([123, [true]])
+				}.to raise_error Rtype::ArgumentTypeError
+				expect {
+					instance.return_arg([123, true])
+				}.to raise_error Rtype::ArgumentTypeError
+
+				klass.send :rtype, :two_args, [[:to_i], [:to_i]] => Any
+				expect {
+					instance.two_args([123, 123], [123])
+				}.to raise_error Rtype::ArgumentTypeError
+				expect {
+					instance.two_args([123], 123)
+				}.to raise_error Rtype::ArgumentTypeError
 			end
 			it "is wrong result" do
 				klass.send :rtype, :return_arg, [Any] => [:to_i, :to_i]
 				expect {instance.return_arg(true)}.to raise_error Rtype::ReturnTypeError
+			end
+		end
+
+		describe 'Hash' do
+			it "is right" do
+				klass.send :rtype, :return_arg, [{k: Integer}, {}] => Any
+				instance.return_arg({k: 123}, {})
+			end
+			it "is wrong args" do
+				klass.send :rtype, :return_arg, [{k: Integer}, {}] => Any
+				expect {
+					instance.return_arg({k: "str"}, {})
+				}.to raise_error Rtype::ArgumentTypeError
+			end
+			it "is wrong result" do
+				klass.send :rtype, :return_arg, [Any] => {k: Integer}
+				expect { instance.return_arg({k: "str"}) }.to raise_error Rtype::ReturnTypeError
 			end
 		end
 
@@ -285,36 +321,117 @@ describe Rtype do
 		end
 
 		describe 'Special type behaviors' do
-			it 'Rtype::Behavior::And' do
-				klass.send :rtype, :return_nil, [Rtype.and(:to_i, :chars)] => nil
-				instance.return_nil("Hello")
-				expect {instance.return_nil(123)}.to raise_error Rtype::ArgumentTypeError
+			describe 'Rtype::Behavior::And' do
+				it 'module singleton method' do
+					klass.send :rtype, :return_nil, [Rtype::and(:to_i, :chars)] => nil
+					instance.return_nil("Hello")
+					expect {instance.return_nil(123)}.to raise_error Rtype::ArgumentTypeError
+				end
+
+				it 'class singleton [] method' do
+					klass.send :rtype, :return_nil, [ Rtype::Behavior::And[:to_i, :chars] ] => nil
+					instance.return_nil("Hello")
+					expect {instance.return_nil(123)}.to raise_error Rtype::ArgumentTypeError
+				end
+
+				it 'core extension method' do
+					klass.send :rtype, :return_nil, [ :to_i.and(:chars) ] => nil
+					instance.return_nil("Hello")
+					expect {instance.return_nil(123)}.to raise_error Rtype::ArgumentTypeError
+				end
 			end
 
-			it 'Rtype::Behavior::Or' do
-				klass.send :rtype, :return_nil, [Rtype.or(Integer, String)] => nil
-				instance.return_nil(123)
-				instance.return_nil("abc")
-				expect {instance.return_nil(nil)}.to raise_error Rtype::ArgumentTypeError
+			describe 'Rtype::Behavior::Or' do
+				it 'module singleton method' do
+					klass.send :rtype, :return_nil, [Rtype::or(Integer, String)] => nil
+					instance.return_nil(123)
+					instance.return_nil("abc")
+					expect {instance.return_nil(nil)}.to raise_error Rtype::ArgumentTypeError
+				end
+
+				it 'class singleton [] method' do
+					klass.send :rtype, :return_nil, [ Rtype::Behavior::Or[Integer, String] ] => nil
+					instance.return_nil(123)
+					instance.return_nil("abc")
+					expect {instance.return_nil(nil)}.to raise_error Rtype::ArgumentTypeError
+				end
+
+				it 'core extension method' do
+					klass.send :rtype, :return_nil, [ Integer.or(String) ] => nil
+					instance.return_nil(123)
+					instance.return_nil("abc")
+					expect {instance.return_nil(nil)}.to raise_error Rtype::ArgumentTypeError
+				end
 			end
 
-			it 'Rtype::Behavior::Nilable' do
-				klass.send :rtype, :return_nil, [Rtype.nilable(Integer)] => nil
-				instance.return_nil(nil)
-				instance.return_nil(123)
-				expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+			describe 'Rtype::Behavior::Nilable' do
+				it 'module singleton method' do
+					klass.send :rtype, :return_nil, [Rtype::nilable(Integer)] => nil
+					instance.return_nil(nil)
+					instance.return_nil(123)
+					expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+				end
+
+				it 'class singleton [] method' do
+					klass.send :rtype, :return_nil, [ Rtype::Behavior::Nilable[Integer] ] => nil
+					instance.return_nil(nil)
+					instance.return_nil(123)
+					expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+				end
+
+				it 'core extension method :nilable' do
+					klass.send :rtype, :return_nil, [Integer.nilable] => nil
+					instance.return_nil(nil)
+					instance.return_nil(123)
+					expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+				end
+
+				it 'core extension method :or_nil' do
+					klass.send :rtype, :return_nil, [Integer.or_nil] => nil
+					instance.return_nil(nil)
+					instance.return_nil(123)
+					expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+				end
 			end
 
-			it 'Rtype::Behavior::Not' do
-				klass.send :rtype, :return_nil, [Rtype.not(String)] => nil
-				instance.return_nil(123)
-				expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+			describe 'Rtype::Behavior::Not' do
+				it 'module singleton method' do
+					klass.send :rtype, :return_nil, [Rtype::not(String)] => nil
+					instance.return_nil(123)
+					expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+				end
+
+				it 'class singleton [] method' do
+					klass.send :rtype, :return_nil, [ Rtype::Behavior::Not[String] ] => nil
+					instance.return_nil(123)
+					expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+				end
+
+				it 'core extension method' do
+					klass.send :rtype, :return_nil, [ String.not ] => nil
+					instance.return_nil(123)
+					expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+				end
 			end
 
-			it 'Rtype::Behavior::Xor' do
-				klass.send :rtype, :return_nil, [Rtype.xor(:to_i, String)] => nil
-				instance.return_nil(123)
-				expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+			describe 'Rtype::Behavior::Xor' do
+				it 'module singleton method' do
+					klass.send :rtype, :return_nil, [Rtype::xor(:to_i, String)] => nil
+					instance.return_nil(123)
+					expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+				end
+
+				it 'class singleton [] method' do
+					klass.send :rtype, :return_nil, [ Rtype::Behavior::Xor[:to_i, String] ] => nil
+					instance.return_nil(123)
+					expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+				end
+
+				it 'core extension method' do
+					klass.send :rtype, :return_nil, [ :to_i.xor(String) ] => nil
+					instance.return_nil(123)
+					expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+				end
 			end
 		end
 	end
@@ -332,6 +449,24 @@ describe Rtype do
 			it 'two' do
 				klass.send :rtype, :sum, [Integer, Integer] => Any
 				expect {instance.sum(1, 2.0)}.to raise_error Rtype::ArgumentTypeError
+			end
+
+			it 'two array' do
+				klass.send :rtype, :sum, [[Integer], [Integer]] => Any
+				instance.sum([1], [2])
+				expect {instance.sum([1], 2)}.to raise_error Rtype::ArgumentTypeError
+				expect {instance.sum([1], ["str"])}.to raise_error Rtype::ArgumentTypeError
+			end
+
+			it 'two hash' do
+				klass.send :rtype, :two_args, [{k: Integer}, {k: Integer}, {}] => Any
+				instance.two_args({k: 123}, {k: 456})
+				expect {
+					instance.two_args({k: 123}, 456)
+				}.to raise_error Rtype::ArgumentTypeError
+				expect {
+					instance.two_args({k: 123}, {k: "str"}, {})
+				}.to raise_error Rtype::ArgumentTypeError
 			end
 
 			it 'one keyword argument' do
@@ -370,6 +505,25 @@ describe Rtype do
 				expect {instance.kwarg(a: 1)}.to raise_error Rtype::ArgumentTypeError
 				expect {instance.kwarg(:a => 1)}.to raise_error Rtype::ArgumentTypeError
 			end
+
+			context 'when hash is not last element' do
+				it 'is hash-type argument, not keyword argument' do
+					klass.send :rtype, :return_arg, [{a: String}, {}] => Any
+					expect {
+						instance.return_arg({a: 123}, {})
+					}.to raise_error Rtype::ArgumentTypeError
+				end
+			end
+
+			it 'hash-type argument and keyword argument' do
+				klass.send :rtype, :arg_and_kwarg, [{a: String}, {b: String}] => Any
+				expect {
+					instance.arg_and_kwarg({a: 123}, b: "str")
+				}.to raise_error Rtype::ArgumentTypeError
+				expect {
+					instance.arg_and_kwarg({a: "str"}, b: 123)
+				}.to raise_error Rtype::ArgumentTypeError
+			end
 		end
 
 		describe 'check return' do
@@ -400,13 +554,13 @@ describe Rtype do
 				end
 				it 'invalid return signature' do
 					expect {
-						klass.send :rtype, :return_arg, [] => {}
+						klass.send :rtype, :return_arg, [] => 123
 					}.to raise_error Rtype::TypeSignatureError
 				end
 
 				it 'invalid type behavior in arguments' do
 					expect {
-						klass.send :rtype, :sum_kwargs, [{a: Integer}, {b: Integer}] => Any
+						klass.send :rtype, :sum_kwargs, [{a: 123}, {b: Integer}] => Any
 					}.to raise_error Rtype::TypeSignatureError
 					expect {
 						klass.send :rtype, :return_arg, [123] => Any
@@ -418,7 +572,7 @@ describe Rtype do
 						klass.send :rtype, :kwarg, {a: 123} => Any
 					}.to raise_error Rtype::TypeSignatureError
 					expect {
-						klass.send :rtype, :kwarg, {a: {b: Integer}} => Any
+						klass.send :rtype, :kwarg, {a: {b: 123}} => Any
 					}.to raise_error Rtype::TypeSignatureError
 					expect {
 						klass.send :rtype, :kwarg, {Object.new => Integer} => Any
