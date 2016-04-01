@@ -12,6 +12,25 @@ rb_rtype_valid(VALUE self, VALUE expected, VALUE value) {
 			return rb_respond_to(value, rb_to_id(expected)) ? Qtrue : Qfalse;
 		case T_REGEXP:
 			return rb_reg_match( expected, rb_funcall(value, rb_intern("to_s"), 0) ) != Qnil ? Qtrue : Qfalse;
+		case T_HASH:
+			if( !RB_TYPE_P(value, T_HASH) ) {
+				return Qfalse;
+			}
+			VALUE e_keys = rb_funcall(expected, rb_intern("keys"), 0);
+			VALUE v_keys = rb_funcall(value, rb_intern("keys"), 0);
+			if( !RTEST(rb_funcall(e_keys, rb_intern("=="), 1, v_keys)) ) {
+				return Qfalse;
+			}
+
+			long i;
+			for(i = 0; i < RARRAY_LEN(e_keys); i++) {
+				VALUE e_k = rb_ary_entry(e_keys, i);
+				VALUE e_v = rb_hash_aref(expected, e_k);
+				if(rb_rtype_valid(self, e_v, rb_hash_aref(value, e_k)) == Qfalse) {
+					return Qfalse;
+				}
+			}
+			return Qtrue;
 		case T_ARRAY:
 			if( !RB_TYPE_P(value, T_ARRAY) ) {
 				return Qfalse;
