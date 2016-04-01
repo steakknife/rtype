@@ -102,7 +102,7 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
   - Each of value’s elements must be valid
   - Value's key list must be equal to the hash's key list
   - **String** key is **different** from **symbol** key
-  - The type signature could not be positioned at last index
+  - vs Keyword arguments
     - `[{}]` is **not** hash type argument. it is keyword argument because its position is last
     - `[{}, {}]` is empty hash type argument (first) and one empty keyword argument (second)
     - `[{}, {}, {}]` is two empty hash type argument (first, second) and empty keyword argument (last)
