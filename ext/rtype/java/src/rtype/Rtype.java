@@ -28,6 +28,7 @@ public class Rtype {
 	
 	public static RubyClass symbol;
 	public static RubyClass regexp;
+	public static RubyClass hash;
 	public static RubyClass array;
 	public static RubyClass trueClass;
 	public static RubyClass falseClass;
@@ -51,6 +52,7 @@ public class Rtype {
 		
 		symbol = ruby.getSymbol();
 		regexp = ruby.getRegexp();
+		hash = ruby.getHash();
 		array = ruby.getArray();
 		trueClass = ruby.getTrueClass();
 		falseClass = ruby.getFalseClass();
@@ -63,7 +65,7 @@ public class Rtype {
 	@JRubyMethod(name = "valid?")
 	public static IRubyObject valid(ThreadContext context, IRubyObject self,
 			IRubyObject expected, IRubyObject value) {
-		return RubyBoolean.newBoolean(ruby, validInternal(context, self, expected, value));
+		return validInternal(context, self, expected, value) ? ruby.getTrue() : ruby.getFalse();
 	}
 	
 	public static boolean validInternal(ThreadContext context, IRubyObject self,
@@ -78,6 +80,28 @@ public class Rtype {
 		else if( regexp.isInstance(expected) ) {
 			IRubyObject result = ((RubyRegexp) expected).match_m( context, value.asString() );
 			return !result.isNil();
+		}
+		else if( hash.isInstance(expected) ) {
+			if( !hash.isInstance(value) ) {
+				return false;
+			}
+			RubyHash expt = (RubyHash) expected;
+			RubyHash v = (RubyHash) value;
+			RubyArray exptKeys = expt.keys();
+			RubyArray vKeys = v.keys();
+			if(!exptKeys.equals(vKeys)) {
+				return false;
+			}
+			
+			for(int i = 0; i < exptKeys.size(); i++) {
+				IRubyObject exptKey = exptKeys.entry(i);
+				IRubyObject exptVal = expt.op_aref(context, exptKey);
+				IRubyObject vVal = v.op_aref(context, exptKey);
+				if( !validInternal(context, self, exptVal, vVal) ) {
+					return false;
+				}
+			}
+			return true;
 		}
 		else if( array.isInstance(expected) ) {
 			if( !array.isInstance(value) ) {
@@ -160,15 +184,15 @@ public class Rtype {
 		assertArgumentsType(context, self, expectedArgs, args);
 		
 		RubyHash exptHash = (RubyHash) expectedKwargs;
-		RubyHash hash = (RubyHash) kwargs;
-		RubyArray keys = hash.keys();
+		RubyHash vHash = (RubyHash) kwargs;
+		RubyArray keys = vHash.keys();
 		int len = keys.getLength();
 		
 		for(int i = 0; i < len; i++) {
 			IRubyObject key = keys.entry(i);
 			IRubyObject e = exptHash.op_aref(context, key);
 			if(!e.isNil()) {
-				IRubyObject v = hash.op_aref(context, key);
+				IRubyObject v = vHash.op_aref(context, key);
 				if(!validInternal(context, self, e, v)) {
 					String msg = rtype.callMethod("kwarg_type_error_message", key, e, v).asJavaString();
 					RubyException exp = new RubyException(ruby, rtypeArgumentTypeError, msg);

@@ -460,9 +460,12 @@ describe Rtype do
 
 			it 'two hash' do
 				klass.send :rtype, :two_args, [{k: Integer}, {k: Integer}, {}] => Any
-				instance.two_args({k: 123}, {k: 456})
+				instance.two_args({k: 123}, {k: 456}, {})
 				expect {
-					instance.two_args({k: 123}, 456)
+					instance.two_args({k: 123}, {}, {})
+				}.to raise_error Rtype::ArgumentTypeError
+				expect {
+					instance.two_args({k: 123}, 456, {})
 				}.to raise_error Rtype::ArgumentTypeError
 				expect {
 					instance.two_args({k: 123}, {k: "str"}, {})
