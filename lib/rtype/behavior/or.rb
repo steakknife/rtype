@@ -18,7 +18,7 @@ module Rtype
 		end
 	end
 
-	def self.or(*args)
+	def or(*args)
 		Behavior::Or[*args]
 	end
 end

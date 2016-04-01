@@ -18,7 +18,7 @@ module Rtype
 		end
 	end
 
-	def self.not(*args)
+	def not(*args)
 		Behavior::Not[*args]
 	end
 end

@@ -15,7 +15,7 @@ module Rtype
 		end
 	end
 
-	def self.nilable(*args)
+	def nilable(*args)
 		Behavior::Nilable[*args]
 	end
 end

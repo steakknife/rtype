@@ -19,7 +19,7 @@ module Rtype
 		end
 	end
 
-	def self.xor(*args)
+	def xor(*args)
 		Behavior::Xor[*args]
 	end
 end
