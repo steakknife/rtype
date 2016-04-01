@@ -27,5 +27,5 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = "~> 2.1"
 
-  s.files = Dir["benchmark/*", "Rakefile", "Gemfile", "README.md", "LICENSE", 'ext/**/*.jar']
+  s.files = Dir["benchmark/*", "Rakefile", "Gemfile", "README.md", "LICENSE", 'ext/rtype/*.jar']
 end
