@@ -12,10 +12,6 @@ class Object
 		::Rtype::not(self)
 	end
 
-	def and_not(*others)
-		::Rtype::not(self, *others)
-	end
-
 	def or(*others)
 		::Rtype::or(self, *others)
 	end
