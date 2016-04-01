@@ -223,7 +223,7 @@ public
 			expected.include?(value)
 		when Hash
 			return false unless value.is_a?(Hash)
-			return false unless expected.length == value.length
+			return false unless expected.keys == value.keys
 			expected.all? { |k, v| valid?(v, value[k]) }
 		when Array
 			return false unless value.is_a?(Array)
