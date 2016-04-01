@@ -40,7 +40,7 @@ module Rtype
 		return_sig = el[1]
 
 		if arg_sig.is_a?(Array)
-			expected_args = arg_sig
+			expected_args = arg_sig.dup
 			if expected_args.last.is_a?(Hash)
 				expected_kwargs = expected_args.pop
 			else
@@ -51,12 +51,12 @@ module Rtype
 			expected_kwargs = arg_sig
 		end
 
-		expected_args.each { |e| valid?(e, nil) }
+		expected_args.each { |e| check_valid_argument_type_sig(e) }
 		if expected_kwargs.keys.any? { |e| !e.is_a?(Symbol) }
 			raise TypeSignatureError, "Invalid type signature: keyword arguments contain non-symbol key"
 		end
-		expected_kwargs.each_value { |e| valid?(e, nil) }
-		valid?(return_sig, nil) unless return_sig.nil?
+		expected_kwargs.each_value { |e| check_valid_argument_type_sig(e) }
+		check_valid_return_type_sig(return_sig)
 
 		sig = TypeSignature.new
 		sig.argument_type = arg_sig
@@ -123,7 +123,7 @@ module Rtype
 		when Array
 			if value.is_a?(Array)
 				arr = expected.map.with_index do |e, idx|
-					if e.is_a?(Array)
+					if e.is_a?(Array) || e.is_a?(Hash)
 						"- [#{idx}] index : {\n" + type_error_message(e, value[idx]) + "\n}"
 					else
 						"- [#{idx}] index : " + type_error_message(e, value[idx])
@@ -132,6 +132,20 @@ module Rtype
 				"Expected #{value.inspect} to be an array with #{expected.length} elements:\n" + arr.join("\n")
 			else
 				"Expected #{value.inspect} to be an array"
+			end
+		when Hash
+			if value.is_a?(Hash)
+				arr = []
+				expected.each do |k, v|
+					if v.is_a?(Array) || v.is_a?(Hash)
+						arr << "- #{k} : {\n" + type_error_message(v, value[k]) + "\n}"
+					else
+						arr << "- #{k} : " + type_error_message(v, value[k])
+					end
+				end
+				"Expected #{value.inspect} to be an hash with #{expected.length} elements:\n" + arr.join("\n")
+			else
+				"Expected #{value.inspect} to be an hash"
 			end
 		when Proc
 			"Expected #{value.inspect} to return a truthy value for proc #{expected}"
@@ -166,7 +180,34 @@ private
 		end
 		nil
 	end
-	
+
+	def check_valid_argument_type_sig(sig)
+		case sig
+		when Rtype::Behavior::Base
+		when Module
+		when Symbol
+		when Regexp
+		when Range
+		when Array
+			sig.each do |e|
+				check_valid_argument_type_sig(e)
+			end
+		when Hash
+			sig.each_value do |e|
+				check_valid_argument_type_sig(e)
+			end
+		when Proc
+		when true
+		when false
+		else
+			raise TypeSignatureError, "Invalid type signature: Unknown type behavior #{sig}"
+		end
+	end
+
+	def check_valid_return_type_sig(sig)
+		check_valid_argument_type_sig(sig) unless sig.nil?
+	end
+
 public
 	unless respond_to?(:valid?)
 	# validate argument type
@@ -180,6 +221,10 @@ public
 			!!(expected =~ value.to_s)
 		when Range
 			expected.include?(value)
+		when Hash
+			return false unless value.is_a?(Hash)
+			return false unless expected.length == value.length
+			expected.all? { |k, v| valid?(v, value[k]) }
 		when Array
 			return false unless value.is_a?(Array)
 			return false unless expected.length == value.length
@@ -207,7 +252,7 @@ public
 			value = args[i]
 			unless expected.nil?
 				unless valid?(expected, value)
-					raise ArgumentTypeError, "for #{(i+1).ordinalize} argument:\n" + type_error_message(expected, value)
+					raise ArgumentTypeError, "#{arg_message(i)}\n" + type_error_message(expected, value)
 				end
 			end
 		end
@@ -222,7 +267,7 @@ public
 			value = args[i]
 			unless expected.nil?
 				unless valid?(expected, value)
-					raise ArgumentTypeError, "#{arg_message(idx)}\n" + type_error_message(expected, value)
+					raise ArgumentTypeError, "#{arg_message(i)}\n" + type_error_message(expected, value)
 				end
 			end
 		end
