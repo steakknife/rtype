@@ -37,9 +37,10 @@ Test::invert(state: 0)
   - If Java extension is used, otherwise it is not required
 
 ## Features
-- Provide type checking for argument and return
+- Provide type checking for arguments and return
 - Support type checking for [keyword argument](#keyword-argument)
 - [Type checking for array elements](#array)
+- [Type checking for hash elements](#hash)
 - [Duck typing](#duck-typing)
 - Custom type behavior
 
@@ -96,6 +97,18 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
   - Of course, nested array works
   - Example: [Array](#array)
   - This can be used as a tuple
+- `Hash`
+  - Value must be an hash
+  - Each of value’s elements must be valid
+  - Value's key list must be equal to the hash's key list
+  - **String** key is **different** from **symbol** key
+  - The type signature could not be positioned at last index
+    - `[{}]` is **not** hash type argument. it is keyword argument because its position is last
+    - `[{}, {}]` is empty hash type argument (first) and one empty keyword argument (second)
+    - `[{}, {}, {}]` is two empty hash type argument (first, second) and empty keyword argument (last)
+    - `{}` is keyword argument. non-keyword arguments must be in array.
+  - Of course, nested hash works
+  - Example: [Hash](#hash)
 - `Proc`
   - Value must return a truthy value for this proc
 - `true`
@@ -106,15 +119,36 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
   - Only available for **return type**. void return type in other languages
 - Special Behaviors
   - `Rtype::and(*types)` : Ensure value is valid for all the types
-    - It also can be used as `Rtype::Behavior::And[*types]` or `include Rtype::Behavior; And[...]`
+    - `Rtype::and(*types)`
+    - `Rtype::Behavior::And[*types]`
+    - `include Rtype::Behavior; And[...]`
+    - `obj.and(*others)` (core extension)
+
   - `Rtype::or(*types)` : Ensure value is valid for at least one of the types
-    - It also can be used as `Rtype::Behavior::Or[*types]` or `include Rtype::Behavior; Or[...]`
+    - `Rtype::or(*types)`
+    - `Rtype::Behavior::Or[*types]`
+    - `include Rtype::Behavior; Or[...]`
+    - `obj.or(*others)` (core extension)
+
   - `Rtype::xor(*types)` : Ensure value is valid for only one of the types
-    - It also can be used as `Rtype::Behavior::Xor[*types]` or `include Rtype::Behavior; Xor[...]`
+    - `Rtype::xor(*types)`
+    - `Rtype::Behavior::Xor[*types]`
+    - `include Rtype::Behavior; Xor[...]`
+    - `obj.xor(*others)` (core extension)
+
   - `Rtype::not(*types)` : Ensure value is not valid for all the types
-    - It also can be used as `Rtype::Behavior::Not[*types]` or `include Rtype::Behavior; Not[...]`
+    - `Rtype::not(*types)`
+    - `Rtype::Behavior::Not[*types]`
+    - `include Rtype::Behavior; Not[...]`
+    - `obj.not` (core extension)
+
   - `Rtype::nilable(type)` : Ensure value can be nil
-    - It also can be used as `Rtype::Behavior::Nilable[type]` or `include Rtype::Behavior; Nilable[...]`
+    - `Rtype::nilable(type)`
+    - `Rtype::Behavior::Nilable[type]`
+    - `include Rtype::Behavior; Nilable[...]`
+    - `obj.nilable` (core extension)
+    - `obj.or_nil` (core extension)
+
   - You can create custom behavior by extending `Rtype::Behavior::Base`
 
 ### Examples
@@ -219,6 +253,38 @@ func [1]
 func [1, 2] # Your location is (1, 2). I will look for you. I will find you
 ```
 
+#### Hash
+```ruby
+# last hash element is keyword arguments
+rtype :func, [{msg: String}, {}] => Any
+def func(hash)
+  puts hash[:msg]
+end
+
+# last hash is keyword arguments
+func({}, {})
+# (Rtype::ArgumentTypeError) for 1st argument:
+# Expected {} to be an hash with 1 elements:
+# - msg : Expected nil to be a String
+
+func({msg: 123}, {})
+# (Rtype::ArgumentTypeError) for 1st argument:
+# Expected {:msg=>123} to be an hash with 1 elements:
+# - msg : Expected 123 to be a String
+
+func({msg: "hello", key: 'value'}, {})
+# (Rtype::ArgumentTypeError) for 1st argument:
+# Expected {:msg=>"hello", :key=>"value"} to be an hash with 1 elements:
+# - msg : Expected "hello" to be a String
+
+func({"msg" => "hello hash"}, {})
+# (Rtype::ArgumentTypeError) for 1st argument:
+# Expected {"msg"=>"hello hash"} to be an hash with 1 elements:
+# - msg : Expected nil to be a String
+
+func({msg: "hello hash"}, {}) # hello hash
+```
+
 #### rtype with attr_accessor
 `rtype_accessor`
 
@@ -250,7 +316,9 @@ Example.new.value
 require 'rtype'
 
 class Example
-  rtype :and_test, [Rtype::and(String, :func)] => Any
+  rtype :and_test, [String.and(:func)] => Any
+  # also works:
+  # rtype :and_test, [Rtype::and(String, :func)] => Any
   def and_test(arg)
   end
 end
@@ -344,7 +412,7 @@ end
 say "Hello" # Hello
 ```
 
-#### Static method
+#### Static(singleton) method
 Use `rtype_self`
 
 ```ruby
