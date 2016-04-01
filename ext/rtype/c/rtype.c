@@ -1,6 +1,7 @@
 #include "rtype.h"
 
 VALUE rb_mRtype, rb_mRtypeBehavior, rb_cRtypeBehaviorBase, rb_eRtypeArgumentTypeError, rb_eRtypeTypeSignatureError, rb_eRtypeReturnTypeError;
+static ID id_to_s, id_keys, id_eqeq, id_include, id_valid, id_call;
 
 VALUE
 rb_rtype_valid(VALUE self, VALUE expected, VALUE value) {
@@ -11,14 +12,14 @@ rb_rtype_valid(VALUE self, VALUE expected, VALUE value) {
 		case T_SYMBOL:
 			return rb_respond_to(value, rb_to_id(expected)) ? Qtrue : Qfalse;
 		case T_REGEXP:
-			return rb_reg_match( expected, rb_funcall(value, rb_intern("to_s"), 0) ) != Qnil ? Qtrue : Qfalse;
+			return rb_reg_match( expected, rb_funcall(value, id_to_s, 0) ) != Qnil ? Qtrue : Qfalse;
 		case T_HASH:
 			if( !RB_TYPE_P(value, T_HASH) ) {
 				return Qfalse;
 			}
-			VALUE e_keys = rb_funcall(expected, rb_intern("keys"), 0);
-			VALUE v_keys = rb_funcall(value, rb_intern("keys"), 0);
-			if( !RTEST(rb_funcall(e_keys, rb_intern("=="), 1, v_keys)) ) {
+			VALUE e_keys = rb_funcall(expected, id_keys, 0);
+			VALUE v_keys = rb_funcall(value, id_keys, 0);
+			if( !RTEST(rb_funcall(e_keys, id_eqeq, 1, v_keys)) ) {
 				return Qfalse;
 			}
 
@@ -57,13 +58,13 @@ rb_rtype_valid(VALUE self, VALUE expected, VALUE value) {
 			return !RTEST(value) ? Qtrue : Qfalse;
 		default:
 			if(rb_obj_is_kind_of(expected, rb_cRange)) {
-				return rb_funcall(expected, rb_intern("include?"), 1, value);
+				return rb_funcall(expected, rb_intern(id_include), 1, value);
 			}
 			else if(rb_obj_is_kind_of(expected, rb_cProc)) {
-				return RTEST(rb_funcall(expected, rb_intern("call"), 1, value)) ? Qtrue : Qfalse;
+				return RTEST(rb_funcall(expected, id_call, 1, value)) ? Qtrue : Qfalse;
 			}
 			else if( RTEST(rb_obj_is_kind_of(expected, rb_cRtypeBehaviorBase)) ) {
-				return rb_funcall(expected, rb_intern("valid?"), 1, value);
+				return rb_funcall(expected, id_valid, 1, value);
 			}
 			else {
 				VALUE str = rb_any_to_s(expected);
@@ -133,6 +134,13 @@ void Init_rtype_native(void) {
 	rb_eRtypeArgumentTypeError = rb_define_class_under(rb_mRtype, "ArgumentTypeError", rb_eArgError);
 	rb_eRtypeTypeSignatureError = rb_define_class_under(rb_mRtype, "TypeSignatureError", rb_eArgError);
 	rb_eRtypeReturnTypeError = rb_define_class_under(rb_mRtype, "ReturnTypeError", rb_eStandardError);
+
+	id_to_s = rb_intern("to_s");
+	id_keys = rb_intern("keys");
+	id_eqeq = rb_intern("==");
+	id_include = rb_intern("include?");
+	id_valid = rb_intern("valid?");
+	id_call = rb_intern("call");
 
 	rb_define_method(rb_mRtype, "valid?", rb_rtype_valid, 2);
 	rb_define_method(rb_mRtype, "assert_arguments_type", rb_rtype_assert_arguments_type, 2);
