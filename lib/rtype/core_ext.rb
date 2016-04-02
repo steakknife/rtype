@@ -8,6 +8,7 @@ class Object
 end
 
 module Kernel
+	include ::Rtype::MethodAnnotator
 private
 	def _rtype_proxy
 		unless @_rtype_proxy
@@ -28,9 +29,7 @@ private
 			end
 		else
 			if method_name.nil?
-				::Rtype::assert_valid_type_sig(type_sig_info)
-				singleton_class.send(:_rtype_proxy).annotation_mode = true
-				singleton_class.send(:_rtype_proxy).annotation_type_sig = type_sig_info
+				raise ArgumentError, "Annotation mode not working out of module"
 			else
 				rtype_self(method_name, type_sig_info)
 			end
