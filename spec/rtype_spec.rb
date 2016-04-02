@@ -709,6 +709,40 @@ describe Rtype do
 				}.to raise_error Rtype::ArgumentTypeError
 			end
 		end
+
+		it "One rtype annotation affect only one method" do
+			class AnnotationTest
+				rtype [String] => Any
+				def one(str)
+				end
+
+				def two(str)
+				end
+			end
+			expect {
+				AnnotationTest.new.one(123)
+			}.to raise_error Rtype::ArgumentTypeError
+			AnnotationTest.new.two(123)
+		end
+
+		it "One rtype annotation affect only one method, regardless of instance method or class method" do
+			class AnnotationTest2
+				rtype [String] => Any
+				def self.static_one(str)
+				end
+
+				def inst_one(str)
+				end
+
+				def self.static_two(str)
+				end
+			end
+			expect {
+				AnnotationTest2::static_one(123)
+			}.to raise_error Rtype::ArgumentTypeError
+			AnnotationTest2.new.inst_one(123)
+			AnnotationTest2::static_two(123)
+		end
 	end
 
 	describe "Call Rtype`s static method directly" do
