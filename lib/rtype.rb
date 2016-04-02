@@ -218,13 +218,13 @@ private
 		# `send` is faster than `method(...).call`
 		owner.send(:_rtype_proxy).send :define_method, method_name do |*args, **kwargs, &block|
 			if kwargs.empty?
-				::Rtype.assert_arguments_type(expected_args, args)
+				::Rtype::assert_arguments_type(expected_args, args)
 				result = super(*args, &block)
 			else
-				::Rtype.assert_arguments_type_with_keywords(expected_args, args, expected_kwargs, kwargs)
+				::Rtype::assert_arguments_type_with_keywords(expected_args, args, expected_kwargs, kwargs)
 				result = super(*args, **kwargs, &block)
 			end
-			::Rtype.assert_return_type(return_sig, result)
+			::Rtype::assert_return_type(return_sig, result)
 			result
 		end
 		nil

@@ -3,9 +3,11 @@ class TrueClass; include Boolean; end
 class FalseClass; include Boolean; end
 Any = BasicObject
 
-module Kernel
+class Object
 	include ::Rtype::MethodAnnotator
+end
 
+module Kernel
 private
 	def _rtype_proxy
 		unless @_rtype_proxy
@@ -17,7 +19,7 @@ private
 
 	def rtype(method_name=nil, type_sig_info)
 		if method_name.nil?
-			Rtype::assert_valid_type_sig(type_sig_info)
+			::Rtype::assert_valid_type_sig(type_sig_info)
 			_rtype_proxy.annotation_mode = true
 			_rtype_proxy.annotation_type_sig = type_sig_info
 		elsif is_a?(Module)

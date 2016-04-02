@@ -9,7 +9,7 @@ module Rtype
 				if @_rtype_proxy
 					proxy = _rtype_proxy
 					if proxy.annotation_mode
-						::Rtype::define_typed_method(self, name, proxy..annotation_type_sig)
+						::Rtype::define_typed_method(self, name, proxy.annotation_type_sig)
 						proxy.annotation_mode = false
 						proxy.annotation_type_sig = nil
 					end
