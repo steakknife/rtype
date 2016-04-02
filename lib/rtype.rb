@@ -155,10 +155,10 @@ module Rtype
 
 	def assert_valid_type_sig(sig)
 		unless sig.is_a?(Hash)
-			raise TypeSignature, "Invalid type signature: type signature is not hash"
+			raise TypeSignatureError, "Invalid type signature: type signature is not hash"
 		end
 		if sig.empty?
-			raise TypeSignature, "Invalid type signature: type signature is empty hash"
+			raise TypeSignatureError, "Invalid type signature: type signature is empty hash"
 		end
 		assert_valid_arguments_type_sig(sig.first[0])
 		assert_valid_return_type_sig(sig.first[1])
@@ -166,6 +166,7 @@ module Rtype
 
 	def assert_valid_arguments_type_sig(sig)
 		if sig.is_a?(Array)
+			sig = sig.dup
 			if sig.last.is_a?(Hash)
 				kwargs = sig.pop
 			else
