@@ -29,8 +29,8 @@ private
 		else
 			if method_name.nil?
 				::Rtype::assert_valid_type_sig(type_sig_info)
-				singleton_class._rtype_proxy.annotation_mode = true
-				singleton_class._rtype_proxy.annotation_type_sig = type_sig_info
+				singleton_class.send(:_rtype_proxy).annotation_mode = true
+				singleton_class.send(:_rtype_proxy).annotation_type_sig = type_sig_info
 			else
 				rtype_self(method_name, type_sig_info)
 			end
