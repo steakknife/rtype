@@ -58,7 +58,7 @@ rb_rtype_valid(VALUE self, VALUE expected, VALUE value) {
 			return !RTEST(value) ? Qtrue : Qfalse;
 		default:
 			if(rb_obj_is_kind_of(expected, rb_cRange)) {
-				return rb_funcall(expected, rb_intern(id_include), 1, value);
+				return rb_funcall(expected, id_include, 1, value);
 			}
 			else if(rb_obj_is_kind_of(expected, rb_cProc)) {
 				return RTEST(rb_funcall(expected, id_call, 1, value)) ? Qtrue : Qfalse;
