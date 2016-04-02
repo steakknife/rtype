@@ -83,6 +83,15 @@ describe Rtype do
 					AnnotationTest::class_method_test(123)
 				}.to raise_error Rtype::ArgumentTypeError
 			end
+			context "outside of module" do
+				it "doesn't works" do
+					expect {
+						rtype [String] => Any
+						def annotation_test(str)
+						end
+					}.to raise_error ArgumentError
+				end
+			end
 		end
 
 		it "outside of module" do
