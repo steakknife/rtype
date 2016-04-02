@@ -5,7 +5,7 @@ Any = BasicObject
 
 module Kernel
 	include ::Rtype::MethodAnnotator
-	
+
 private
 	def _rtype_proxy
 		unless @_rtype_proxy
@@ -47,7 +47,7 @@ private
 	def rtype_accessor_self(accessor_name, type_behavior)
 		accessor_name = accessor_name.to_sym
 		if !respond_to?(accessor_name) || !respond_to?(:"#{accessor_name}=")
-			attr_accessor accessor_name
+			singleton_class.send(:attr_accessor, accessor_name)
 		end
 		::Rtype::define_typed_accessor(singleton_class, accessor_name, type_behavior)
 	end
