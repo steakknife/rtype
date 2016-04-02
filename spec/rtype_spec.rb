@@ -715,12 +715,12 @@ describe Rtype do
 		end
 		
 		it 'Rtype::valid?' do
-			expect {
+			expect(
 				Rtype::valid?(String, "str")
-			}.to be true
-			expect {
+			).to be true
+			expect(
 				Rtype::valid?(Integer, "str")
-			}.to be false
+			).to be false
 			expect {
 				Rtype::valid?("Invalid type behavior", "Test Value")
 			}.to raise_error Rtype::TypeSignatureError
