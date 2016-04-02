@@ -8,7 +8,6 @@ class Object
 end
 
 module Kernel
-	include ::Rtype::MethodAnnotator
 private
 	def _rtype_proxy
 		unless @_rtype_proxy
