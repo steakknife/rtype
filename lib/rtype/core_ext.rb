@@ -7,14 +7,18 @@ module Kernel
 private
 	def _rtype_proxy
 		unless @_rtype_proxy
-			@_rtype_proxy = Module.new
+			@_rtype_proxy = ::Rtype::RtypeProxy.new
 			prepend @_rtype_proxy
 		end
 		@_rtype_proxy
 	end
 
-	def rtype(method_name, type_sig_info)
-		if is_a?(Module)
+	def rtype(method_name=nil, type_sig_info)
+		if method_name.nil?
+			Rtype::assert_valid_type_sig(type_sig_info)
+			_rtype_proxy.annotation_mode = true
+			_rtype_proxy.annotation_type_sig = type_sig_info
+		elsif is_a?(Module)
 			::Rtype::define_typed_method(self, method_name, type_sig_info)
 		else
 			rtype_self(method_name, type_sig_info)
@@ -26,6 +30,11 @@ private
 	end
 
 	def rtype_accessor(accessor_name, type_behavior)
+		accessor_name = accessor_name.to_sym
+		unless respond_to?(accessor_name)
+			attr_accessor accessor_name
+		end
+		
 		if is_a?(Module)
 			::Rtype::define_typed_accessor(self, accessor_name, type_behavior)
 		else
