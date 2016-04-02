@@ -4,6 +4,8 @@ class FalseClass; include Boolean; end
 Any = BasicObject
 
 module Kernel
+	include ::Rtype::MethodAnnotator
+	
 private
 	def _rtype_proxy
 		unless @_rtype_proxy
