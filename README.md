@@ -286,7 +286,7 @@ func({msg: "hello hash"}, {}) # hello hash
 ```
 
 #### rtype with attr_accessor
-`rtype_accessor` : calls attr_accessor and makes it typed method
+`rtype_accessor` : calls `attr_accessor` if the accessor method(getter/setter) is not defined, and makes it typed method
 
 You can use `rtype_accessor_self` for static accessor.
 
