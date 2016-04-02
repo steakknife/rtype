@@ -34,17 +34,17 @@ end
 pure_obj = PureTest.new
 
 class RtypeTest
-	rtype :sum, [Numeric, Numeric] => Numeric
+	rtype [Numeric, Numeric] => Numeric
 	def sum(x, y)
 		x + y
 	end
 
-	rtype :mul, [:to_i, :to_i] => Numeric
+	rtype [:to_i, :to_i] => Numeric
 	def mul(x, y)
 		x * y
 	end
 
-	rtype :args, [Integer, Numeric, String, :to_i] => Any
+	rtype [Integer, Numeric, String, :to_i] => Any
 	def args(a, b, c, d)
 	end
 end
