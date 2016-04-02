@@ -16,6 +16,7 @@ else
 end
 
 require_relative 'rtype/rtype_proxy'
+require_relative 'rtype/method_annotator'
 require_relative 'rtype/core_ext'
 require_relative 'rtype/version'
 require_relative 'rtype/type_signature_error'
@@ -35,7 +36,7 @@ module Rtype
 		method_name = method_name.to_sym
 		raise ArgumentError, "method_name is nil" if method_name.nil?
 		assert_valid_type_sig(type_sig_info)
-		
+
 		el = type_sig_info.first
 		arg_sig = el[0]
 		return_sig = el[1]
