@@ -62,6 +62,29 @@ describe Rtype do
 	end
 
 	describe 'Kernel#rtype' do
+		context "with annotation mode" do
+			it "works with instance method" do
+				class AnnotationTest
+					rtype [String] => Any
+					def test(str)
+					end
+				end
+				expect {
+					AnnotationTest.new.test(123)
+				}.to raise_error Rtype::ArgumentTypeError
+			end
+			it "works with class method" do
+				class AnnotationTest
+					rtype [String] => Any
+					def self.class_method_test(str)
+					end
+				end
+				expect {
+					AnnotationTest::class_method_test(123)
+				}.to raise_error Rtype::ArgumentTypeError
+			end
+		end
+
 		it "outside of module" do
 			rtype :test_args, [String] => Any
 			def test_args(str)
@@ -119,7 +142,6 @@ describe Rtype do
 	it 'Kernel#rtype_accessor' do
 		class TestClass
 			rtype_accessor :value, String
-			attr_accessor :value
 
 			def initialize
 				@value = 123
@@ -134,12 +156,6 @@ describe Rtype do
 			@@val = 123
 
 			rtype_accessor_self :value, String
-			def self.value=(val)
-				@@val = val
-			end
-			def self.value
-				@@val
-			end
 		end
 		expect {TestClass::value = 123}.to raise_error Rtype::ArgumentTypeError
 		expect {TestClass::value}.to raise_error Rtype::ReturnTypeError
@@ -549,13 +565,13 @@ describe Rtype do
 		end
 
 		describe 'wrong case' do
-			describe 'invalid signature form' do
-				it 'invalid argument signature' do
+			describe 'invalid type signature' do
+				it 'invalid arguments type signature' do
 					expect {
 						klass.send :rtype, :return_arg, Any => nil
 					}.to raise_error Rtype::TypeSignatureError
 				end
-				it 'invalid return signature' do
+				it 'invalid return type signature' do
 					expect {
 						klass.send :rtype, :return_arg, [] => 123
 					}.to raise_error Rtype::TypeSignatureError
@@ -589,6 +605,18 @@ describe Rtype do
 					expect {
 						klass.send :rtype, :return_arg, [] => "abc"
 					}.to raise_error Rtype::TypeSignatureError
+				end
+
+				context "with annotation mode" do
+					it 'works' do
+						expect {
+							class AnnotationTest
+								rtype [String, 123] => Any
+								def invalid_test(arg)
+								end
+							end
+						}.to raise_error Rtype::TypeSignatureError
+					end
 				end
 			end
 		end
@@ -688,6 +716,12 @@ describe Rtype do
 		
 		it 'Rtype::valid?' do
 			expect {
+				Rtype::valid?(String, "str")
+			}.to be true
+			expect {
+				Rtype::valid?(Integer, "str")
+			}.to be false
+			expect {
 				Rtype::valid?("Invalid type behavior", "Test Value")
 			}.to raise_error Rtype::TypeSignatureError
 		end
@@ -708,6 +742,34 @@ describe Rtype do
 			expect {
 				Rtype::assert_return_type nil, "No nil"
 			}.to raise_error Rtype::ReturnTypeError
+		end
+		
+		it 'Rtype::assert_valid_type_sig' do
+			Rtype::assert_valid_type_sig([Integer, String] => Any)
+			expect {
+				Rtype::assert_valid_type_sig([Integer, String])
+			}.to raise_error Rtype::TypeSignatureError
+		end
+		
+		it 'Rtype::assert_valid_arguments_type_sig' do
+			Rtype::assert_valid_arguments_type_sig([Integer, String])
+			expect {
+				Rtype::assert_valid_arguments_type_sig("[Integer, String]")
+			}.to raise_error Rtype::TypeSignatureError
+		end
+		
+		it 'Rtype::assert_valid_argument_type_sig_element' do
+			Rtype::assert_valid_argument_type_sig_element(Integer)
+			expect {
+				Rtype::assert_valid_argument_type_sig_element("Integer")
+			}.to raise_error Rtype::TypeSignatureError
+		end
+		
+		it 'Rtype::assert_valid_return_type_sig' do
+			Rtype::assert_valid_return_type_sig(Integer)
+			expect {
+				Rtype::assert_valid_return_type_sig("Integer")
+			}.to raise_error Rtype::TypeSignatureError
 		end
 	end
 end
