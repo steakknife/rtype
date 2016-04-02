@@ -223,11 +223,15 @@ describe Rtype do
 			end
 			it "is wrong args" do
 				klass.send :rtype, :return_arg, [1..10] => Any
-				expect {instance.return_arg(1001)}.to raise_error Rtype::ArgumentTypeError
+				expect {
+					instance.return_arg(1001)
+				}.to raise_error Rtype::ArgumentTypeError
 			end
 			it "is wrong result" do
 				klass.send :rtype, :return_nil, [Any] => 1..10
-				expect {instance.return_nil(5)}.to raise_error Rtype::ReturnTypeError
+				expect {
+					instance.return_nil(5)
+				}.to raise_error Rtype::ReturnTypeError
 			end
 		end
 
