@@ -15,6 +15,7 @@ else
 	end
 end
 
+require_relative 'rtype/rtype_proxy'
 require_relative 'rtype/core_ext'
 require_relative 'rtype/version'
 require_relative 'rtype/type_signature_error'
@@ -31,10 +32,10 @@ module Rtype
 	@@type_signatures = Hash.new({})
 
 	def define_typed_method(owner, method_name, type_sig_info)
-		raise TypeSignatureError, "Invalid type signature" unless valid_type_sig_info_form?(type_sig_info)
 		method_name = method_name.to_sym
 		raise ArgumentError, "method_name is nil" if method_name.nil?
-
+		assert_valid_type_sig(type_sig_info)
+		
 		el = type_sig_info.first
 		arg_sig = el[0]
 		return_sig = el[1]
@@ -50,13 +51,6 @@ module Rtype
 			expected_args = []
 			expected_kwargs = arg_sig
 		end
-
-		expected_args.each { |e| check_valid_argument_type_sig(e) }
-		if expected_kwargs.keys.any? { |e| !e.is_a?(Symbol) }
-			raise TypeSignatureError, "Invalid type signature: keyword arguments contain non-symbol key"
-		end
-		expected_kwargs.each_value { |e| check_valid_argument_type_sig(e) }
-		check_valid_return_type_sig(return_sig)
 
 		sig = TypeSignature.new
 		sig.argument_type = arg_sig
@@ -158,13 +152,67 @@ module Rtype
 		end
 	end
 
-private
-	def valid_type_sig_info_form?(hash)
-		return false unless hash.is_a?(Hash)
-		arg_sig = hash.first[0]
-		arg_sig.is_a?(Array) || arg_sig.is_a?(Hash)
+	def assert_valid_type_sig(sig)
+		unless sig.is_a?(Hash)
+			raise TypeSignature, "Invalid type signature: type signature is not hash"
+		end
+		if sig.empty?
+			raise TypeSignature, "Invalid type signature: type signature is empty hash"
+		end
+		assert_valid_arguments_type_sig(sig.first[0])
+		assert_valid_return_type_sig(sig.first[1])
 	end
 
+	def assert_valid_arguments_type_sig(sig)
+		if sig.is_a?(Array)
+			if sig.last.is_a?(Hash)
+				kwargs = sig.pop
+			else
+				kwargs = {}
+			end
+			sig.each { |e| assert_valid_argument_type_sig_element(e) }
+			if kwargs.keys.any? { |e| !e.is_a?(Symbol) }
+				raise TypeSignatureError, "Invalid type signature: keyword arguments contain non-symbol key"
+			end
+			kwargs.each_value { |e| assert_valid_argument_type_sig_element(e) }
+		elsif sig.is_a?(Hash)
+			if sig.keys.any? { |e| !e.is_a?(Symbol) }
+				raise TypeSignatureError, "Invalid type signature: keyword arguments contain non-symbol key"
+			end
+			sig.each_value { |e| assert_valid_argument_type_sig_element(e) }
+		else
+			raise TypeSignatureError, "Invalid type signature: arguments type signature is neither array nor hash"
+		end
+	end
+
+	def assert_valid_argument_type_sig_element(sig)
+		case sig
+		when Rtype::Behavior::Base
+		when Module
+		when Symbol
+		when Regexp
+		when Range
+		when Array
+			sig.each do |e|
+				assert_valid_argument_type_sig_element(e)
+			end
+		when Hash
+			sig.each_value do |e|
+				assert_valid_argument_type_sig_element(e)
+			end
+		when Proc
+		when true
+		when false
+		else
+			raise TypeSignatureError, "Invalid type signature: Unknown type behavior #{sig}"
+		end
+	end
+
+	def assert_valid_return_type_sig(sig)
+		assert_valid_argument_type_sig_element(sig) unless sig.nil?
+	end
+
+private
 	def define_typed_method_to_proxy(owner, method_name, expected_args, expected_kwargs, return_sig)
 		# `send` is faster than `method(...).call`
 		owner.send(:_rtype_proxy).send :define_method, method_name do |*args, **kwargs, &block|
@@ -179,33 +227,6 @@ private
 			result
 		end
 		nil
-	end
-
-	def check_valid_argument_type_sig(sig)
-		case sig
-		when Rtype::Behavior::Base
-		when Module
-		when Symbol
-		when Regexp
-		when Range
-		when Array
-			sig.each do |e|
-				check_valid_argument_type_sig(e)
-			end
-		when Hash
-			sig.each_value do |e|
-				check_valid_argument_type_sig(e)
-			end
-		when Proc
-		when true
-		when false
-		else
-			raise TypeSignatureError, "Invalid type signature: Unknown type behavior #{sig}"
-		end
-	end
-
-	def check_valid_return_type_sig(sig)
-		check_valid_argument_type_sig(sig) unless sig.nil?
 	end
 
 public
