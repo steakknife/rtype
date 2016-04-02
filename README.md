@@ -8,21 +8,21 @@ You can do the type checking in Ruby with this gem!
 ```ruby
 require 'rtype'
 
-rtype :sum, [:to_i, Numeric] => Numeric
-def sum(a, b)
-  a.to_i + b
-end
-
-sum(123, "asd")
-# (Rtype::ArgumentTypeError) for 2nd argument:
-# Expected "asd" to be a Numeric
-
 class Test
-  rtype_self :invert, {state: Boolean} => Boolean
+  rtype [:to_i, Numeric] => Numeric
+  def sum(a, b)
+    a.to_i + b
+  end
+
+  rtype {state: Boolean} => Boolean
   def self.invert(state:)
     !state
   end
 end
+
+Test.new.sum(123, "asd")
+# (Rtype::ArgumentTypeError) for 2nd argument:
+# Expected "asd" to be a Numeric
 
 Test::invert(state: 0)
 # (Rtype::ArgumentTypeError) for 'state' argument:
@@ -158,15 +158,15 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
 require 'rtype'
 
 class Example
-  rtype :test, [Integer] => nil
+  rtype [Integer] => nil
   def test(i)
   end
   
-  rtype :any_type_arg, [Any] => nil
+  rtype [Any] => nil
   def any_type_arg(arg)
   end
   
-  rtype :return_type_test, [] => Integer
+  rtype [] => Integer
   def return_type_test
     "not integer"
   end
@@ -189,13 +189,13 @@ e.return_type_test
 require 'rtype'
 
 class Example
-  rtype :say_your_name, {name: String} => Any
+  rtype {name: String} => Any
   def say_your_name(name:)
     puts "My name is #{name}"
   end
   
   # Mixing positional arguments and keyword arguments
-  rtype :name_and_age, [String, {age: Integer}] => Any
+  rtype [String, {age: Integer}] => Any
   def name_and_age(name, age:)
     puts "Name: #{name}, Age: #{age}"
   end
@@ -214,7 +214,7 @@ Example.new.say_your_name(name: 12345)
 require 'rtype'
 
 class Duck
-  rtype :says, [:to_i] => Any
+  rtype [:to_i] => Any
   def says(i)
     puts "duck:" + " quack"*i.to_i
   end
@@ -286,7 +286,7 @@ func({msg: "hello hash"}, {}) # hello hash
 ```
 
 #### rtype with attr_accessor
-`rtype_accessor`
+`rtype_accessor` : call attr_accessor and make it typed method
 
 You can use `rtype_accessor_self` for static accessor.
 
@@ -295,7 +295,7 @@ require 'rtype'
 
 class Example
   rtype_accessor :value, String
-  attr_accessor :value
+
   def initialize
     @value = 456
   end
@@ -316,9 +316,9 @@ Example.new.value
 require 'rtype'
 
 class Example
-  rtype :and_test, [String.and(:func)] => Any
+  rtype [String.and(:func)] => Any
   # also works:
-  # rtype :and_test, [Rtype::and(String, :func)] => Any
+  # rtype [Rtype::and(String, :func)] => Any
   def and_test(arg)
   end
 end
@@ -354,7 +354,7 @@ module Game
   class Player < Entity
     include Rtype::Behavior
 
-    rtype :attack, [And[*ENEMY]] => Any
+    rtype [And[*ENEMY]] => Any
     def attacks(enemy)
       "Player attacks '#{enemy.name}' (level #{enemy.level})!"
     end
@@ -375,12 +375,18 @@ Game::Player.new.attacks Game::Slime.new
 # Player attacks 'Powerful Slime' (level 123)!
 ```
 
-#### Position of `rtype` && (symbol || string)
+#### Position of `rtype` && (Specify method name || annotation mode) && (Symbol || String)
 ```ruby
 require 'rtype'
 
 class Example
-  # Works. Recommended
+  # Recommended. Annotation mode (no method name required)
+  rtype [Integer, String] => String
+  def hello_world(i, str)
+    puts "Hello? #{i} #{st
+  end
+
+  # Works (specifying method name)
   rtype :hello_world, [Integer, String] => String
   def hello_world(i, str)
     puts "Hello? #{i} #{st
@@ -397,11 +403,17 @@ class Example
   def hello_world_three(i, str)
     puts "Hello? #{i} #{str}"
   end
+
+  # Don't works. `rtype` works for next method
+  def hello_world_four(i, str)
+    puts "Hello? #{i} #{str}"
+  end
+  rtype [Integer, String] => String
 end
 ```
 
 #### Outside of module (root)
-Yes, it works
+Outside of module, annotation mode don't works. You must specify method name.
 
 ```ruby
 rtype :say, [String] => Any
@@ -409,11 +421,29 @@ def say(message)
   puts message
 end
 
-say "Hello" # Hello
+Test.new.say "Hello" # Hello
+
+rtype [String] => Any
+# (ArgumentError) Annotation mode not working out of module
 ```
 
 #### Static(singleton) method
-Use `rtype_self`
+rtype annotation mode works both instance and class method
+
+```ruby
+require 'rtype'
+
+class Example
+  rtype [:to_i] => Any
+  def self.say_ya(i)
+    puts "say" + " ya"*i.to_i
+  end
+end
+
+Example::say_ya(3) #say ya ya ya
+```
+
+however, if you specify method name, you must use `rtype_self` instead of `rtype`
 
 ```ruby
 require 'rtype'
@@ -437,7 +467,7 @@ Any change of this doesn't affect type checking
 require 'rtype'
 
 class Example
-  rtype :test, [:to_i] => Any
+  rtype [:to_i] => Any
   def test(i)
   end
 end
