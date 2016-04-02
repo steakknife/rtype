@@ -18,14 +18,22 @@ private
 	end
 
 	def rtype(method_name=nil, type_sig_info)
-		if method_name.nil?
-			::Rtype::assert_valid_type_sig(type_sig_info)
-			_rtype_proxy.annotation_mode = true
-			_rtype_proxy.annotation_type_sig = type_sig_info
-		elsif is_a?(Module)
-			::Rtype::define_typed_method(self, method_name, type_sig_info)
+		if is_a?(Module)
+			if method_name.nil?
+				::Rtype::assert_valid_type_sig(type_sig_info)
+				_rtype_proxy.annotation_mode = true
+				_rtype_proxy.annotation_type_sig = type_sig_info
+			else
+				::Rtype::define_typed_method(self, method_name, type_sig_info)
+			end
 		else
-			rtype_self(method_name, type_sig_info)
+			if method_name.nil?
+				::Rtype::assert_valid_type_sig(type_sig_info)
+				singleton_class._rtype_proxy.annotation_mode = true
+				singleton_class._rtype_proxy.annotation_type_sig = type_sig_info
+			else
+				rtype_self(method_name, type_sig_info)
+			end
 		end
 	end
 
