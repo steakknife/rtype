@@ -30,7 +30,7 @@ module Rtype
 
 	# This is just the 'information'
 	# Any change of this doesn't affect type checking
-	@@type_signatures = Hash.new({})
+	@@type_signatures = Hash.new
 
 	def define_typed_method(owner, method_name, type_sig_info)
 		method_name = method_name.to_sym
@@ -56,6 +56,9 @@ module Rtype
 		sig = TypeSignature.new
 		sig.argument_type = arg_sig
 		sig.return_type = return_sig
+		unless @@type_signatures.key?(owner)
+			@@type_signatures[owner] = {}
+		end
 		@@type_signatures[owner][method_name] = sig
 
 		define_typed_method_to_proxy(owner, method_name, expected_args, expected_kwargs, return_sig)
