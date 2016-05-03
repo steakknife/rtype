@@ -12,10 +12,6 @@ class Object
 		::Rtype::not(self)
 	end
 
-	def or(*others)
-		::Rtype::or(self, *others)
-	end
-
 	def xor(*others)
 		::Rtype::xor(self, *others)
 	end
