@@ -110,28 +110,16 @@ public class Rtype {
 			return true;
 		}
 		else if( array.isInstance(expected) ) {
-			if( !array.isInstance(value) ) {
-				return false;
-			}
-			
 			RubyArray expt = (RubyArray) expected;
-			RubyArray v = (RubyArray) value;
 			int exptLen = expt.getLength();
-			
-			if(exptLen != v.getLength()) {
-				return false;
-			}
-			else {
-				for(int i = 0; i < exptLen; i++) {
-					IRubyObject exptEl = expt.entry(i);
-					IRubyObject vEl = v.entry(i);
-					boolean isValid = validInternal(context, self, exptEl, vEl);
-					if(!isValid) {
-						return false;
-					}
+			for(int i = 0; i < exptLen; i++) {
+				IRubyObject exptEl = expt.entry(i);
+				boolean isValid = validInternal(context, self, exptEl, value);
+				if(!isValid) {
+					return false;
 				}
-				return true;
 			}
+			return true;
 		}
 		else if(trueClass.isInstance(expected)) {
 			return value.isTrue();

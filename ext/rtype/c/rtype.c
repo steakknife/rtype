@@ -33,25 +33,16 @@ rb_rtype_valid(VALUE self, VALUE expected, VALUE value) {
 			}
 			return Qtrue;
 		case T_ARRAY:
-			if( !RB_TYPE_P(value, T_ARRAY) ) {
-				return Qfalse;
-			}
-			else if( RARRAY_LEN(expected) != RARRAY_LEN(value) ) {
-				return Qfalse;
-			}
-			else {
-				// 'for' loop initial declarations are only allowed in c99 mode
-				long i;
-				for(i = 0; i < RARRAY_LEN(expected); i++) {
-					VALUE e = rb_ary_entry(expected, i);
-					VALUE v = rb_ary_entry(value, i);
-					VALUE valid = rb_rtype_valid(self, e, v);
-					if(valid == Qfalse) {
-						return Qfalse;
-					}
+			// 'for' loop initial declarations are only allowed in c99 mode
+			long i;
+			for(i = 0; i < RARRAY_LEN(expected); i++) {
+				VALUE e = rb_ary_entry(expected, i);
+				VALUE valid = rb_rtype_valid(self, e, value);
+				if(valid == Qfalse) {
+					return Qfalse;
 				}
-				return Qtrue;
 			}
+			return Qtrue;
 		case T_TRUE:
 			return RTEST(value) ? Qtrue : Qfalse;
 		case T_FALSE:
