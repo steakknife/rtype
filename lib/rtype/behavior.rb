@@ -4,7 +4,6 @@ module Rtype
 end
 
 require_relative 'behavior/base'
-require_relative 'behavior/or'
 require_relative 'behavior/and'
 require_relative 'behavior/xor'
 require_relative 'behavior/not'
