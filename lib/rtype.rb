@@ -105,7 +105,6 @@ module Rtype
 		"for '#{key}' argument:"
 	end
 
-
 	def type_error_message(expected, value)
 		case expected
 		when Rtype::Behavior::Base
@@ -119,18 +118,8 @@ module Rtype
 		when Range
 			"Expected #{value.inspect} to be included in range #{expected.inspect}"
 		when Array
-			if value.is_a?(Array)
-				arr = expected.map.with_index do |e, idx|
-					if e.is_a?(Array) || e.is_a?(Hash)
-						"- [#{idx}] index : {\n" + type_error_message(e, value[idx]) + "\n}"
-					else
-						"- [#{idx}] index : " + type_error_message(e, value[idx])
-					end
-				end
-				"Expected #{value.inspect} to be an array with #{expected.length} elements:\n" + arr.join("\n")
-			else
-				"Expected #{value.inspect} to be an array"
-			end
+			arr = expected.map { |e| type_error_message(e, value) }
+			arr.join("\nOR ")
 		when Hash
 			if value.is_a?(Hash)
 				arr = []
@@ -252,10 +241,7 @@ public
 			return false unless expected.keys == value.keys
 			expected.all? { |k, v| valid?(v, value[k]) }
 		when Array
-			return false unless value.is_a?(Array)
-			return false unless expected.length == value.length
-			idx = -1
-			expected.all? { |e| idx += 1; valid?(e, value[idx]) }
+			expected.any? { |e| valid?(e, value) }
 		when Proc
 			!!expected.call(value)
 		when true
