@@ -237,31 +237,30 @@ describe Rtype do
 
 		describe 'Array' do
 			it "is right" do
-				klass.send :rtype, :return_arg, [[:to_i, :to_i]] => Any
-				instance.return_arg([123, 456])
+				klass.send :rtype, :return_arg, [[:to_i]] => Any
+				instance.return_arg(123)
 
-				klass.send :rtype, :two_args, [[:to_i], [:to_i]] => Any
-				instance.two_args([123], [456])
+				klass.send :rtype, :return_arg, [[String, Integer]] => Any
+				instance.return_arg("str")
+				instance.return_arg(123)
+				
+				klass.send :rtype, :return_arg, [] => [String, Integer]
+				instance.return_arg("str")
+				instance.return_arg(123)
 			end
 			it "is wrong args" do
-				klass.send :rtype, :return_arg, [[:to_i, :to_i]] => Any
+				klass.send :rtype, :return_arg, [[String, Integer]] => Any
 				expect {
-					instance.return_arg([123, [true]])
-				}.to raise_error Rtype::ArgumentTypeError
-				expect {
-					instance.return_arg([123, true])
+					instance.return_arg(nil)
 				}.to raise_error Rtype::ArgumentTypeError
 
-				klass.send :rtype, :two_args, [[:to_i], [:to_i]] => Any
+				klass.send :rtype, :return_arg, [[String]] => Any
 				expect {
-					instance.two_args([123, 123], [123])
-				}.to raise_error Rtype::ArgumentTypeError
-				expect {
-					instance.two_args([123], 123)
+					instance.return_arg(123)
 				}.to raise_error Rtype::ArgumentTypeError
 			end
 			it "is wrong result" do
-				klass.send :rtype, :return_arg, [Any] => [:to_i, :to_i]
+				klass.send :rtype, :return_arg, [Any] => [String, Integer]
 				expect {instance.return_arg(true)}.to raise_error Rtype::ReturnTypeError
 			end
 		end
@@ -370,29 +369,6 @@ describe Rtype do
 				end
 			end
 
-			describe 'Rtype::Behavior::Or' do
-				it 'module singleton method' do
-					klass.send :rtype, :return_nil, [Rtype::or(Integer, String)] => nil
-					instance.return_nil(123)
-					instance.return_nil("abc")
-					expect {instance.return_nil(nil)}.to raise_error Rtype::ArgumentTypeError
-				end
-
-				it 'class singleton [] method' do
-					klass.send :rtype, :return_nil, [ Rtype::Behavior::Or[Integer, String] ] => nil
-					instance.return_nil(123)
-					instance.return_nil("abc")
-					expect {instance.return_nil(nil)}.to raise_error Rtype::ArgumentTypeError
-				end
-
-				it 'core extension method' do
-					klass.send :rtype, :return_nil, [ Integer.or(String) ] => nil
-					instance.return_nil(123)
-					instance.return_nil("abc")
-					expect {instance.return_nil(nil)}.to raise_error Rtype::ArgumentTypeError
-				end
-			end
-
 			describe 'Rtype::Behavior::Nilable' do
 				it 'module singleton method' do
 					klass.send :rtype, :return_nil, [Rtype::nilable(Integer)] => nil
@@ -480,13 +456,6 @@ describe Rtype do
 				expect {instance.sum(1, 2.0)}.to raise_error Rtype::ArgumentTypeError
 			end
 
-			it 'two array' do
-				klass.send :rtype, :sum, [[Integer], [Integer]] => Any
-				instance.sum([1], [2])
-				expect {instance.sum([1], 2)}.to raise_error Rtype::ArgumentTypeError
-				expect {instance.sum([1], ["str"])}.to raise_error Rtype::ArgumentTypeError
-			end
-
 			it 'two hash' do
 				klass.send :rtype, :two_args, [{k: Integer}, {k: Integer}, {}] => Any
 				instance.two_args({k: 123}, {k: 456}, {})
@@ -564,9 +533,9 @@ describe Rtype do
 				instance.return_arg("str")
 			end
 
-			it 'Array (tuple)' do
+			it 'Array' do
 				klass.send :rtype, :return_arg, [] => [Integer, Float]
-				expect {instance.return_arg([1, 2])}.to raise_error Rtype::ReturnTypeError
+				expect {instance.return_arg("str")}.to raise_error Rtype::ReturnTypeError
 			end
 		end
 
