@@ -82,3 +82,9 @@ class Method
 		::Rtype.type_signatures[owner][name].return_type
 	end
 end
+
+class Array
+	def comb
+		::Rtype::Behavior::And[*self]
+	end
+end
