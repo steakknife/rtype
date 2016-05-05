@@ -98,7 +98,7 @@ module Rtype
 	end
 
 	def arg_message(idx)
-		"for #{(idx+1).ordinalize} argument:"
+		"for #{ordinalize_number(idx+1)} argument:"
 	end
 
 	def kwarg_message(key)
@@ -222,7 +222,19 @@ private
 		end
 		nil
 	end
-
+	
+	def ordinalize_number(num)
+	    if (11..13).include?(num % 100)
+			"#{num}th"
+	    else
+			case num % 10
+			when 1; "#{num}st"
+			when 2; "#{num}nd"
+			when 3; "#{num}rd"
+			else "#{num}th"
+			end
+	    end
+	end
 public
 	unless respond_to?(:valid?)
 	# validate argument type
