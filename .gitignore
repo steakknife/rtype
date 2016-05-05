@@ -3,3 +3,4 @@ Gemfile.lock
 coverage
 ext/rtype/java/*
 !ext/rtype/java/src
+tmp
