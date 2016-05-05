@@ -37,9 +37,8 @@ Test::invert(state: 0)
   - If Java extension is used, otherwise it is not required
 
 ## Features
-- Provide type checking for arguments and return
-- Support type checking for [keyword argument](#keyword-argument)
-- [Type checking for array elements](#array)
+- Provides type checking for arguments and return
+- Supports type checking for [keyword argument](#keyword-argument)
 - [Type checking for hash elements](#hash)
 - [Duck typing](#duck-typing)
 - Custom type behavior
@@ -81,28 +80,23 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
 
 ### Supported Type Behaviors
 - `Module`
-  - Value must be an instance of this module/class or one of its superclasses
+  - Value must be an instance of the module/class or one of its superclasses
   - `Any` : An alias for `BasicObject` (means Any Object)
   - `Boolean` : `true` or `false`
 - `Symbol`
-  - Value must have(respond to) a method with this name
+  - Value must have(respond to) a method with the name
 - `Regexp`
-  - Value must match this regexp pattern
+  - Value must match the regexp pattern
 - `Range`
-  - Value must be included in this range
-- `Array` (tuple)
-  - Value must be an array
-  - Each of value's elements must be valid
-  - Value's length must be equal to the array's length
-  - Of course, nested array works
-  - Example: [Array](#array)
-  - This can be used as a tuple
+  - Value must be included in the range
+- `Array`
+  - Value can be any type in the array
 - `Hash`
   - Value must be an hash
   - Each of value’s elements must be valid
   - Value's key list must be equal to the hash's key list
   - **String** key is **different** from **symbol** key
-  - vs Keyword arguments
+  - vs Keyword arguments (e.g.)
     - `[{}]` is **not** hash type argument. it is keyword argument because its position is last
     - `[{}, {}]` is empty hash type argument (first) and one empty keyword argument (second)
     - `[{}, {}, {}]` is two empty hash type argument (first, second) and empty keyword argument (last)
@@ -110,44 +104,31 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
   - Of course, nested hash works
   - Example: [Hash](#hash)
 - `Proc`
-  - Value must return a truthy value for this proc
+  - Value must return a truthy value for the proc
 - `true`
   - Value must be **truthy**
 - `false`
   - Value must be **falsy**
 - `nil`
-  - Only available for **return type**. void return type in other languages
+  - Value must be nil (:nil? method returns true)
 - Special Behaviors
   - `Rtype::and(*types)` : Ensure value is valid for all the types
-    - `Rtype::and(*types)`
-    - `Rtype::Behavior::And[*types]`
-    - `include Rtype::Behavior; And[...]`
-    - `obj.and(*others)` (core extension)
-
-  - `Rtype::or(*types)` : Ensure value is valid for at least one of the types
-    - `Rtype::or(*types)`
-    - `Rtype::Behavior::Or[*types]`
-    - `include Rtype::Behavior; Or[...]`
-    - `obj.or(*others)` (core extension)
-
+    - `Rtype::and(*types)`, `Rtype::Behavior::And[*types]`, `include Rtype::Behavior; And[...]`
+    - `Array#comb`
+    - `Object#and(*others)`
+    
   - `Rtype::xor(*types)` : Ensure value is valid for only one of the types
-    - `Rtype::xor(*types)`
-    - `Rtype::Behavior::Xor[*types]`
-    - `include Rtype::Behavior; Xor[...]`
-    - `obj.xor(*others)` (core extension)
+    - `Rtype::xor(*types)`, `Rtype::Behavior::Xor[*types]`, `include Rtype::Behavior; Xor[...]`
+    - `Object#xor(*others)`
 
   - `Rtype::not(*types)` : Ensure value is not valid for all the types
-    - `Rtype::not(*types)`
-    - `Rtype::Behavior::Not[*types]`
-    - `include Rtype::Behavior; Not[...]`
-    - `obj.not` (core extension)
+    - `Rtype::not(*types)`, `Rtype::Behavior::Not[*types]`, `include Rtype::Behavior; Not[...]`
+    - `Object#not`
 
   - `Rtype::nilable(type)` : Ensure value can be nil
-    - `Rtype::nilable(type)`
-    - `Rtype::Behavior::Nilable[type]`
-    - `include Rtype::Behavior; Nilable[...]`
-    - `obj.nilable` (core extension)
-    - `obj.or_nil` (core extension)
+    - `Rtype::nilable(type)`, `Rtype::Behavior::Nilable[type]`, `include Rtype::Behavior; Nilable[...]`
+    - `Object#nilable`
+    - `Object#or_nil`
 
   - You can create custom behavior by extending `Rtype::Behavior::Base`
 
@@ -224,33 +205,19 @@ Duck.new.says("2") # duck: quack quack
 ```
 
 #### Array
-This can be used as a tuple.
-
 ```ruby
-rtype :func, [[Numeric, Numeric]] => Any
-def func(arr)
-  puts "Your location is (#{arr[0]}, #{arr[1]}). I will look for you. I will find you"
+rtype :ruby!, [[String, Integer]] => Any
+def ruby!(arg)
+	puts "ruby!"
 end
 
-func [1, "str"]
-# (Rtype::ArgumentTypeError) for 1st argument:
-# Expected [1, "str"] to be an array with 2 elements:
-# - [0] index : Expected 1 to be a Numeric
-# - [1] index : Expected "str" to be a Numeric
+func("str") # ruby!
+func(123) # ruby!
 
-func [1, 2, 3]
+func(nil)
 # (Rtype::ArgumentTypeError) for 1st argument:
-# Expected [1, 2, 3] to be an array with 2 elements:
-# - [0] index : Expected 1 to be a Numeric
-# - [1] index : Expected 2 to be a Numeric
-
-func [1]
-# (Rtype::ArgumentTypeError) for 1st argument:
-# Expected [1] to be an array with 2 elements:
-# - [0] index : Expected 1 to be a Numeric
-# - [1] index : Expected nil to be a Numeric
-
-func [1, 2] # Your location is (1, 2). I will look for you. I will find you
+# Expected nil to be a String
+# OR Expected nil to be a Integer
 ```
 
 #### Hash
@@ -316,7 +283,7 @@ Example.new.value
 require 'rtype'
 
 class Example
-  rtype [String.and(:func)] => Any
+  rtype [[String, :func].comb] => Any
   # also works:
   # rtype [Rtype::and(String, :func)] => Any
   def and_test(arg)
@@ -349,12 +316,12 @@ module Game
   ENEMY = [
     :name,
     :level
-  ]
+  ].comb
   
   class Player < Entity
     include Rtype::Behavior
 
-    rtype [And[*ENEMY]] => Any
+    rtype [ENEMY] => Any
     def attacks(enemy)
       "Player attacks '#{enemy.name}' (level #{enemy.level})!"
     end
