@@ -80,21 +80,21 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
 
 ### Supported Type Behaviors
 - `Module`
-  - Value must be an instance of the module/class or one of its superclasses
+  - A value must be an instance of the module/class or one of its superclasses
   - `Any` : An alias for `BasicObject` (means Any Object)
   - `Boolean` : `true` or `false`
 - `Symbol`
-  - Value must have(respond to) a method with the name
+  - A value must have(respond to) a method with the name
 - `Regexp`
-  - Value must match the regexp pattern
+  - A value must match the regexp pattern
 - `Range`
-  - Value must be included in the range
+  - A value must be included in the range
 - `Array`
-  - Value can be any type in the array
+  - A value can be any type in the array
 - `Hash`
-  - Value must be an hash
-  - Each of value’s elements must be valid
-  - Value's key list must be equal to the hash's key list
+  - A value must be an hash
+  - Each of the value’s elements must be valid
+  - The value's key list must be equal to the hash's key list
   - **String** key is **different** from **symbol** key
   - vs Keyword arguments (e.g.)
     - `[{}]` is **not** hash type argument. it is keyword argument because its position is last
@@ -104,28 +104,28 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
   - Of course, nested hash works
   - Example: [Hash](#hash)
 - `Proc`
-  - Value must return a truthy value for the proc
+  - A value must return a truthy value for the proc
 - `true`
-  - Value must be **truthy**
+  - A value must be **truthy**
 - `false`
-  - Value must be **falsy**
+  - A value must be **falsy**
 - `nil`
-  - Value must be nil
+  - A value must be nil
 - Special Behaviors
-  - `Rtype::and(*types)` : Ensure value is valid for all the types
+  - `Rtype::and(*types)` : Ensure a value is valid for all the types
     - `Rtype::and(*types)`, `Rtype::Behavior::And[*types]`, `include Rtype::Behavior; And[...]`
     - `Array#comb`
     - `Object#and(*others)`
     
-  - `Rtype::xor(*types)` : Ensure value is valid for only one of the types
+  - `Rtype::xor(*types)` : Ensure a value is valid for only one of the types
     - `Rtype::xor(*types)`, `Rtype::Behavior::Xor[*types]`, `include Rtype::Behavior; Xor[...]`
     - `Object#xor(*others)`
 
-  - `Rtype::not(*types)` : Ensure value is not valid for all the types
+  - `Rtype::not(*types)` : Ensure a value is not valid for all the types
     - `Rtype::not(*types)`, `Rtype::Behavior::Not[*types]`, `include Rtype::Behavior; Not[...]`
     - `Object#not`
 
-  - `Rtype::nilable(type)` : Ensure value can be nil
+  - `Rtype::nilable(type)` : Ensure a value can be nil
     - `Rtype::nilable(type)`, `Rtype::Behavior::Nilable[type]`, `include Rtype::Behavior; Nilable[...]`
     - `Object#nilable`
     - `Object#or_nil`
