@@ -197,13 +197,14 @@ module Rtype
 		when Proc
 		when true
 		when false
+		when nil
 		else
 			raise TypeSignatureError, "Invalid type signature: Unknown type behavior #{sig}"
 		end
 	end
 
 	def assert_valid_return_type_sig(sig)
-		assert_valid_argument_type_sig_element(sig) unless sig.nil?
+		assert_valid_argument_type_sig_element(sig)
 	end
 
 private
@@ -262,6 +263,8 @@ public
 			!value
 		when Rtype::Behavior::Base
 			expected.valid? value
+		when nil
+			value.nil?
 		else
 			raise TypeSignatureError, "Invalid type signature: Unknown type behavior #{expected}"
 		end
@@ -270,14 +273,14 @@ public
 
 	unless respond_to?(:assert_arguments_type)
 	def assert_arguments_type(expected_args, args)
+		e_len = expected_args.length
 		# `length.times` is faster than `each_with_index`
 		args.length.times do |i|
+			break if i >= e_len
 			expected = expected_args[i]
 			value = args[i]
-			unless expected.nil?
-				unless valid?(expected, value)
-					raise ArgumentTypeError, "#{arg_message(i)}\n" + type_error_message(expected, value)
-				end
+			unless valid?(expected, value)
+				raise ArgumentTypeError, "#{arg_message(i)}\n" + type_error_message(expected, value)
 			end
 		end
 	end
@@ -285,19 +288,20 @@ public
 
 	unless respond_to?(:assert_arguments_type_with_keywords)
 	def assert_arguments_type_with_keywords(expected_args, args, expected_kwargs, kwargs)
+		e_len = expected_args.length
 		# `length.times` is faster than `each_with_index`
 		args.length.times do |i|
+			break if i >= e_len
 			expected = expected_args[i]
 			value = args[i]
-			unless expected.nil?
-				unless valid?(expected, value)
-					raise ArgumentTypeError, "#{arg_message(i)}\n" + type_error_message(expected, value)
-				end
+			unless valid?(expected, value)
+				raise ArgumentTypeError, "#{arg_message(i)}\n" + type_error_message(expected, value)
 			end
 		end
+		
 		kwargs.each do |key, value|
-			expected = expected_kwargs[key]
-			unless expected.nil?
+			if expected_kwargs.key?(key)
+				expected = expected_kwargs[key]
 				unless valid?(expected, value)
 					raise ArgumentTypeError, "#{kwarg_message(key)}\n" + type_error_message(expected, value)
 				end
@@ -308,14 +312,8 @@ public
 
 	unless respond_to?(:assert_return_type)
 	def assert_return_type(expected, result)
-		if expected.nil?
-			unless result.nil?
-				raise ReturnTypeError, "for return:\n" + type_error_message(expected, result)
-			end
-		else
-			unless valid?(expected, result)
-				raise ReturnTypeError, "for return:\n" + type_error_message(expected, result)
-			end
+		unless valid?(expected, result)
+			raise ReturnTypeError, "for return:\n" + type_error_message(expected, result)
 		end
 	end
 	end
