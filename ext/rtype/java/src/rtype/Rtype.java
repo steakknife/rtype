@@ -10,6 +10,7 @@ import org.jruby.RubyHash;
 import org.jruby.RubyModule;
 import org.jruby.RubyProc;
 import org.jruby.RubyRegexp;
+import org.jruby.RubyString;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
 import org.jruby.exceptions.RaiseException;
@@ -18,6 +19,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 @JRubyModule(name="Rtype")
 public class Rtype {
+	public static String JAVA_EXT_VERSION = "0.6.0";
+	
 	public static Ruby ruby;
 	public static RubyModule rtype;
 	public static RubyModule rtypeBehavior;
@@ -66,6 +69,7 @@ public class Rtype {
 		qfalse = ruby.getFalse();
 		
 		rtype.defineAnnotatedMethods(Rtype.class);
+		rtype.defineConstant("JAVA_EXT_VERSION", ruby.newString(JAVA_EXT_VERSION));
 	}
 	
 	@JRubyMethod(name = "valid?")
@@ -115,11 +119,11 @@ public class Rtype {
 			for(int i = 0; i < exptLen; i++) {
 				IRubyObject exptEl = expt.entry(i);
 				boolean isValid = validInternal(context, self, exptEl, value);
-				if(!isValid) {
-					return false;
+				if(isValid) {
+					return true;
 				}
 			}
-			return true;
+			return false;
 		}
 		else if(trueClass.isInstance(expected)) {
 			return value.isTrue();
@@ -140,6 +144,9 @@ public class Rtype {
 			IRubyObject result = expected.callMethod(context, "valid?", value);
 			return result.isTrue();
 		}
+		else if(expected.isNil()) {
+			return value.isNil();
+		}
 		else {
 			String msg = "Invalid type signature: Unknown type behavior " + expected.asString().asJavaString();
 			RubyException exp = new RubyException(ruby, rtypeTypeSignatureError, msg);
@@ -152,18 +159,19 @@ public class Rtype {
 			IRubyObject expectedArgs, IRubyObject args) {
 		RubyArray rExptArgs = (RubyArray) expectedArgs;
 		RubyArray rArgs = (RubyArray) args;
+		int e_len = rExptArgs.getLength();
 		int len = rExptArgs.getLength();
 		
 		for(int i = 0; i < len; i++) {
+			if(i >= e_len) break;
+			
 			IRubyObject e = rExptArgs.entry(i);
 			IRubyObject v = rArgs.entry(i);
 			
-			if(!e.isNil()) {
-				if(!validInternal(context, self, e, v)) {
-					String msg = rtype.callMethod("arg_type_error_message", new RubyFixnum(ruby, i), e, v).asJavaString();
-					RubyException exp = new RubyException(ruby, rtypeArgumentTypeError, msg);
-					throw new RaiseException(exp);
-				}
+			if(!validInternal(context, self, e, v)) {
+				String msg = rtype.callMethod("arg_type_error_message", new RubyFixnum(ruby, i), e, v).asJavaString();
+				RubyException exp = new RubyException(ruby, rtypeArgumentTypeError, msg);
+				throw new RaiseException(exp);
 			}
 		}
 	}
@@ -184,8 +192,8 @@ public class Rtype {
 		
 		for(int i = 0; i < len; i++) {
 			IRubyObject key = keys.entry(i);
-			IRubyObject e = exptHash.op_aref(context, key);
-			if(!e.isNil()) {
+			if(exptHash.containsKey(key)) {
+				IRubyObject e = exptHash.op_aref(context, key);
 				IRubyObject v = vHash.op_aref(context, key);
 				if(!validInternal(context, self, e, v)) {
 					String msg = rtype.callMethod("kwarg_type_error_message", key, e, v).asJavaString();
@@ -199,19 +207,10 @@ public class Rtype {
 	@JRubyMethod(name="assert_return_type")
 	public static void assertReturnType(ThreadContext context, IRubyObject self,
 			IRubyObject expected, IRubyObject result) {
-		if(expected.isNil()) {
-			if(!result.isNil()) {
-				String msg = "for return:\n" + rtype.callMethod("type_error_message", expected, result).asJavaString();
-				RubyException exp = new RubyException(ruby, rtypeReturnTypeError, msg);
-				throw new RaiseException(exp);
-			}
-		}
-		else {
-			if(!validInternal(context, self, expected, result)) {
-				String msg = "for return:\n" + rtype.callMethod("type_error_message", expected, result).asJavaString();
-				RubyException exp = new RubyException(ruby, rtypeReturnTypeError, msg);
-				throw new RaiseException(exp);
-			}
+		if(!validInternal(context, self, expected, result)) {
+			String msg = "for return:\n" + rtype.callMethod("type_error_message", expected, result).asJavaString();
+			RubyException exp = new RubyException(ruby, rtypeReturnTypeError, msg);
+			throw new RaiseException(exp);
 		}
 	}
 }
