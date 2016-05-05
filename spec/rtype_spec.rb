@@ -334,17 +334,19 @@ describe Rtype do
 		end
 
 		describe 'nil' do
-			it "is only for return" do
+			it "for return" do
 				klass.send :rtype, :return_nil, [] => nil
 				instance.return_nil(123)
 
 				klass.send :rtype, :return_arg, [] => nil
 				expect {instance.return_arg(123)}.to raise_error Rtype::ReturnTypeError
 			end
-			it "could not be used for args" do
+			it "for args" do
+				klass.send :rtype, :return_arg, [nil] => Any
+				instance.return_arg(nil)
 				expect {
-					klass.send :rtype, :return_arg, [nil] => Any
-				}.to raise_error Rtype::TypeSignatureError
+					instance.return_arg(123)
+				}.to raise_error Rtype::ArgumentTypeError
 			end
 		end
 
