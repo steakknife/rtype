@@ -114,9 +114,15 @@ class Method
 		!!::Rtype.type_signatures[owner][name]
 	end
 
-	# @return [Hash]
+	# @return [TypeSignature]
 	def type_signature
 		::Rtype.type_signatures[owner][name]
+	end
+
+	# @return [Hash]
+	# @see TypeSignature#info
+	def type_info
+		::Rtype.type_signatures[owner][name].info
 	end
 	
 	# @return [Array, Hash]

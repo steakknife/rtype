@@ -1,5 +1,5 @@
 module Rtype
-	VERSION = "0.6.2".freeze
+	VERSION = "0.6.3".freeze
 	# rtype java extension version. nil If the extension is not used
 	JAVA_EXT_VERSION = nil unless defined?(JAVA_EXT_VERSION)
 	# rtype c extension version. nil If the extension is not used
