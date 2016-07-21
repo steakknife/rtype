@@ -2,16 +2,16 @@ if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
 	begin
 		require 'java'
 		require 'rtype/rtype_java'
-		puts "Rtype with Java extension"
+		# puts "Rtype with Java extension"
 	rescue LoadError
-		puts "Rtype without native extension"
+		# puts "Rtype without native extension"
 	end
 else
 	begin
 		require "rtype/rtype_native"
-		puts "Rtype with C native extension"
+		# puts "Rtype with C native extension"
 	rescue LoadError
-		puts "Rtype without native extension"
+		# puts "Rtype without native extension"
 	end
 end
 
