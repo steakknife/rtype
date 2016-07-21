@@ -150,24 +150,30 @@ describe Rtype do
 
 	it 'Kernel#rtype_accessor' do
 		class TestClass
-			rtype_accessor :value, String
+			rtype_accessor :value, :value2, String
 
 			def initialize
 				@value = 123
+				@value2 = 123
 			end
 		end
 		expect {TestClass.new.value = 123}.to raise_error Rtype::ArgumentTypeError
 		expect {TestClass.new.value}.to raise_error Rtype::ReturnTypeError
+		expect {TestClass.new.value2 = 123}.to raise_error Rtype::ArgumentTypeError
+		expect {TestClass.new.value2}.to raise_error Rtype::ReturnTypeError
 	end
 
 	it 'Kernel#rtype_accessor_self' do
 		class TestClass
-			@@val = 123
+			@@value = 123
+			@@value2 = 123
 
-			rtype_accessor_self :value, String
+			rtype_accessor_self :value, :value2, String
 		end
 		expect {TestClass::value = 123}.to raise_error Rtype::ArgumentTypeError
 		expect {TestClass::value}.to raise_error Rtype::ReturnTypeError
+		expect {TestClass::value2 = 123}.to raise_error Rtype::ArgumentTypeError
+		expect {TestClass::value2}.to raise_error Rtype::ReturnTypeError
 	end
 
 	describe 'Test type behaviors' do
@@ -438,6 +444,34 @@ describe Rtype do
 					klass.send :rtype, :return_nil, [ :to_i.xor(String) ] => nil
 					instance.return_nil(123)
 					expect {instance.return_nil("abc")}.to raise_error Rtype::ArgumentTypeError
+				end
+			end
+			
+			describe 'Rtype::Behavior::TypedArray' do
+				it 'class singleton [] method' do
+					klass.send :rtype, :return_nil, [ Rtype::Behavior::TypedArray[Integer] ] => nil
+					instance.return_nil([123])
+					expect {instance.return_nil(123)}.to raise_error Rtype::ArgumentTypeError
+					expect {instance.return_nil([1.0])}.to raise_error Rtype::ArgumentTypeError
+				end
+
+				it 'core extension method (Array::of)' do
+					klass.send :rtype, :return_nil, [ Array.of(Integer) ] => nil
+					instance.return_nil([123])
+					expect {instance.return_nil(123)}.to raise_error Rtype::ArgumentTypeError
+					expect {instance.return_nil([1.0])}.to raise_error Rtype::ArgumentTypeError
+				end
+				
+				it 'complicated type sig' do
+					klass.send :rtype, :return_nil, [ Array.of(:to_i.and(:chars)) ] => nil
+					instance.return_nil(["hello"])
+					expect {instance.return_nil("hello")}.to raise_error Rtype::ArgumentTypeError
+					expect {instance.return_nil([123])}.to raise_error Rtype::ArgumentTypeError
+				end
+				
+				it 'allows empty array' do
+					klass.send :rtype, :return_nil, [ Array.of(Integer) ] => nil
+					instance.return_nil([])
 				end
 			end
 		end

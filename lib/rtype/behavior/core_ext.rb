@@ -16,3 +16,9 @@ class Object
 		::Rtype::xor(self, *others)
 	end
 end
+
+class Array
+	def self.of(type_sig)
+		::Rtype::Behavior::TypedArray.new(type_sig)
+	end
+end
