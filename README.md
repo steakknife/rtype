@@ -32,9 +32,9 @@ Test::invert(state: 0)
 ## Requirements
 - Ruby >= 2.1
 - MRI
-  - If C native extension is used, otherwise it is not required
-- JRuby
-  - If Java extension is used, otherwise it is not required
+  - If C native extension is used. otherwise it is not required
+- JRuby (JRuby 9000+)
+  - If Java extension is used. otherwise it is not required
 
 ## Features
 - Provides type checking for arguments and return
@@ -80,7 +80,7 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
 
 ### Supported Type Behaviors
 - `Module`
-  - A value must be an instance of the module/class or one of its superclasses
+  - A value must be an instance of the module/class or one of its superclasses (`is_a?`)
   - `Any` : An alias for `BasicObject` (means Any Object)
   - `Boolean` : `true` or `false`
 - `Symbol`
@@ -92,14 +92,14 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
 - `Array`
   - A value can be any type in the array
 - `Hash`
-  - A value must be an hash
+  - A value must be a hash
   - Each of the value’s elements must be valid
   - The value's key list must be equal to the hash's key list
   - **String** key is **different** from **symbol** key
-  - vs Keyword arguments (e.g.)
-    - `[{}]` is **not** hash type argument. it is keyword argument because its position is last
-    - `[{}, {}]` is empty hash type argument (first) and one empty keyword argument (second)
-    - `[{}, {}, {}]` is two empty hash type argument (first, second) and empty keyword argument (last)
+  - vs. Keyword arguments (e.g.)
+    - `[{}]` is **not** hash type argument. it is keyword argument, because its position is last
+    - `[{}, {}]` is empty hash type argument (first), and one empty keyword argument (second)
+    - `[{}, {}, {}]` is two empty hash type argument (first, second), and empty keyword argument (last)
     - `{}` is keyword argument. non-keyword arguments must be in array.
   - Of course, nested hash works
   - Example: [Hash](#hash)
@@ -111,21 +111,27 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
   - A value must be **falsy**
 - `nil`
   - A value must be nil
+  
 - Special Behaviors
-  - `Rtype::and(*types)` : Ensure a value is valid for all the types
+  - `Rtype::TypedArray` : Ensures a value is an array with the type (type signature)
+    - `Array::of(type)` (recommended)
+    - `Rtype::Behavior::TypedArray[type]`
+    - Example: [TypedArray](#typed-array)
+    
+  - `Rtype::and(*types)` : Ensures a value is valid for all the types
     - `Rtype::and(*types)`, `Rtype::Behavior::And[*types]`, `include Rtype::Behavior; And[...]`
     - `Array#comb`
     - `Object#and(*others)`
     
-  - `Rtype::xor(*types)` : Ensure a value is valid for only one of the types
+  - `Rtype::xor(*types)` : Ensures a value is valid for only one of the types
     - `Rtype::xor(*types)`, `Rtype::Behavior::Xor[*types]`, `include Rtype::Behavior; Xor[...]`
     - `Object#xor(*others)`
 
-  - `Rtype::not(*types)` : Ensure a value is not valid for all the types
+  - `Rtype::not(*types)` : Ensures a value is not valid for all the types
     - `Rtype::not(*types)`, `Rtype::Behavior::Not[*types]`, `include Rtype::Behavior; Not[...]`
     - `Object#not`
 
-  - `Rtype::nilable(type)` : Ensure a value can be nil
+  - `Rtype::nilable(type)` : Ensures a value can be nil
     - `Rtype::nilable(type)`, `Rtype::Behavior::Nilable[type]`, `include Rtype::Behavior; Nilable[...]`
     - `Object#nilable`
     - `Object#or_nil`
@@ -231,22 +237,22 @@ end
 # last hash is keyword arguments
 func({}, {})
 # (Rtype::ArgumentTypeError) for 1st argument:
-# Expected {} to be an hash with 1 elements:
+# Expected {} to be a hash with 1 elements:
 # - msg : Expected nil to be a String
 
 func({msg: 123}, {})
 # (Rtype::ArgumentTypeError) for 1st argument:
-# Expected {:msg=>123} to be an hash with 1 elements:
+# Expected {:msg=>123} to be a hash with 1 elements:
 # - msg : Expected 123 to be a String
 
 func({msg: "hello", key: 'value'}, {})
 # (Rtype::ArgumentTypeError) for 1st argument:
-# Expected {:msg=>"hello", :key=>"value"} to be an hash with 1 elements:
+# Expected {:msg=>"hello", :key=>"value"} to be a hash with 1 elements:
 # - msg : Expected "hello" to be a String
 
 func({"msg" => "hello hash"}, {})
 # (Rtype::ArgumentTypeError) for 1st argument:
-# Expected {"msg"=>"hello hash"} to be an hash with 1 elements:
+# Expected {"msg"=>"hello hash"} to be a hash with 1 elements:
 # - msg : Expected nil to be a String
 
 func({msg: "hello hash"}, {}) # hello hash
@@ -275,6 +281,38 @@ Example.new.value = 123
 Example.new.value
 # (Rtype::ReturnTypeError) for return:
 # Expected 456 to be a String
+```
+
+#### Typed Array
+```ruby
+### TEST 1 ###
+class Test
+	rtype [Array.of(Integer)] => Any
+	def sum(args)
+		num = 0
+		args.each { |e| num += e }
+	end
+end
+
+sum([1, 2, 3]) # => 6
+
+sum([1.0, 2, 3])
+# (Rtype::ArgumentTypeError) for 1st argument:
+# Expected [1.0, 2, 3] to be an array with type Integer"
+```
+
+```ruby
+### TEST 2 ###
+class Test
+	rtype [ Array.of([Integer, Float]) ] => Any
+	def sum(args)
+		num = 0
+		args.each { |e| num += e }
+	end
+end
+
+sum([1, 2, 3]) # => 6
+sum([1.0, 2, 3]) # => 6.0
 ```
 
 #### Combined type
@@ -342,7 +380,7 @@ Game::Player.new.attacks Game::Slime.new
 # Player attacks 'Powerful Slime' (level 123)!
 ```
 
-#### Position of `rtype` && (Specify method name || annotation mode) && (Symbol || String)
+#### Position of `rtype` && (specifying method name || annotation mode) && (symbol || string)
 ```ruby
 require 'rtype'
 
@@ -371,7 +409,7 @@ class Example
     puts "Hello? #{i} #{str}"
   end
 
-  # Don't works. `rtype` works for next method
+  # Doesn't work. `rtype` works for following (next) method
   def hello_world_four(i, str)
     puts "Hello? #{i} #{str}"
   end
@@ -410,7 +448,7 @@ end
 Example::say_ya(3) #say ya ya ya
 ```
 
-however, if you specify method name, you must use `rtype_self` instead of `rtype`
+if you specify method name, however, you must use `rtype_self` instead of `rtype`
 
 ```ruby
 require 'rtype'
@@ -425,7 +463,7 @@ end
 Example::say_ya(3) #say ya ya ya
 ```
 
-#### Check type information
+#### Checking type information
 This is just the 'information'
 
 Any change of this doesn't affect type checking
@@ -524,7 +562,7 @@ Comparison:
 ## Rubype, Sig
 Rtype is influenced by [Rubype](https://github.com/gogotanaka/Rubype) and [Sig](https://github.com/janlelis/sig).
 
-If you don't like Rtype, You can use other type checking gem such as Contracts, Rubype, Rtc, Typecheck, Sig.
+If you don't like Rtype, You can use other library such as Contracts, Rubype, Rtc, Typecheck, Sig.
 
 ## Author
 Sputnik Gugja (sputnikgugja@gmail.com)

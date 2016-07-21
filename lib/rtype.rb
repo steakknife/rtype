@@ -130,9 +130,9 @@ module Rtype
 						arr << "- #{k} : " + type_error_message(v, value[k])
 					end
 				end
-				"Expected #{value.inspect} to be an hash with #{expected.length} elements:\n" + arr.join("\n")
+				"Expected #{value.inspect} to be a hash with #{expected.length} elements:\n" + arr.join("\n")
 			else
-				"Expected #{value.inspect} to be an hash"
+				"Expected #{value.inspect} to be a hash"
 			end
 		when Proc
 			"Expected #{value.inspect} to return a truthy value for proc #{expected}"
