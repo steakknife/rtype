@@ -18,7 +18,7 @@ module Rtype
 			end
 
 			def error_message(value)
-				"Expected #{value.inspect} to be a array with type #{@type_sig.inspect}"
+				"Expected #{value.inspect} to be an array with type #{@type_sig.inspect}"
 			end
 		end
 	end
