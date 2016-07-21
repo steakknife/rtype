@@ -38,9 +38,10 @@ Test::invert(state: 0)
 
 ## Features
 - Provides type checking for arguments and return
-- Supports type checking for [keyword argument](#keyword-argument)
+- [Keyword Argument](#keyword-argument)
 - [Type checking for hash elements](#hash)
-- [Duck typing](#duck-typing)
+- [Duck Typing](#duck-typing)
+- [Typed Array](#typed-array)
 - Custom type behavior
 
 ## Installation
