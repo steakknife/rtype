@@ -28,10 +28,18 @@ require_relative 'rtype/behavior'
 module Rtype
 	extend self
 
-	# This is just the 'information'
+	# This is just 'information'
 	# Any change of this doesn't affect type checking
 	@@type_signatures = Hash.new
 
+	# Makes the method typed
+	# @param owner Owner of the method
+	# @param [#to_sym] method_name
+	# @param [Hash] type_sig_info A type signature. e.g. `[Integer, Float] => Float`
+	# @return [void]
+	# 
+	# @raise [ArgumentError] If method_name is nil
+	# @raise [TypeSignatureError] If type_sig_info is invalid
 	def define_typed_method(owner, method_name, type_sig_info)
 		method_name = method_name.to_sym
 		raise ArgumentError, "method_name is nil" if method_name.nil?
@@ -64,7 +72,20 @@ module Rtype
 		define_typed_method_to_proxy(owner, method_name, expected_args, expected_kwargs, return_sig)
 	end
 
+	# Calls `attr_accessor` if the accessor method(getter/setter) is not defined.
+	# and makes it typed.
+	# 
+	# this method uses `define_typed_method` for getter and setter.
+	# 
+	# @param owner Owner of the accessor
+	# @param [#to_sym] accessor_name
+	# @param type_behavior A type behavior. e.g. Integer
+	# @return [void]
+	# 
+	# @raise [ArgumentError] If accessor_name is nil
+	# @raise [TypeSignatureError]
 	def define_typed_accessor(owner, accessor_name, type_behavior)
+		raise ArgumentError, "accessor_name is nil" if accessor_name.nil?
 		getter = accessor_name.to_sym
 		setter = :"#{accessor_name}="
 		valid?(type_behavior, nil)
@@ -72,6 +93,11 @@ module Rtype
 		define_typed_method owner, setter, [type_behavior] => Any
 	end
 
+	# This is just 'information'
+	# Any change of this doesn't affect type checking
+	# 
+	# @return [Hash]
+	# @note type_signatures[owner][method_name]
 	def type_signatures
 		@@type_signatures
 	end
@@ -89,22 +115,44 @@ module Rtype
 	end
 =end
 
+	# @param [Integer] idx
+	# @param expected A type behavior
+	# @param value
+	# @return [String] A error message
+	# 
+	# @raise [ArgumentError] If expected is invalid
 	def arg_type_error_message(idx, expected, value)
 		"#{arg_message(idx)}\n" + type_error_message(expected, value)
 	end
 
+	# @param [String, Symbol] key
+	# @param expected A type behavior
+	# @param value
+	# @return [String] A error message
+	# 
+	# @raise [ArgumentError] If expected is invalid
 	def kwarg_type_error_message(key, expected, value)
 		"#{kwarg_message(key)}\n" + type_error_message(expected, value)
 	end
-
+	
+	# @return [String]
 	def arg_message(idx)
 		"for #{ordinalize_number(idx+1)} argument:"
 	end
 
+	# @return [String]
 	def kwarg_message(key)
 		"for '#{key}' argument:"
 	end
 
+	# Returns a error message for the pair of type behavior and value
+	# 
+	# @param expected A type behavior
+	# @param value
+	# @return [String] error message
+	# 
+	# @note This method doesn't check the value is valid
+	# @raise [TypeSignatureError] If expected is invalid
 	def type_error_message(expected, value)
 		case expected
 		when Rtype::Behavior::Base
@@ -142,9 +190,19 @@ module Rtype
 			"Expected #{value.inspect} to be a falsy value"
 		when nil # for return
 			"Expected #{value.inspect} to be nil"
+		else
+			raise TypeSignatureError, "Invalid type behavior #{expected}"
 		end
 	end
 
+	# Checks the type signature is valid
+	# 
+	# e.g.
+	# `[Integer] => Any` is valid.
+	# `[Integer]` or `Any` are invalid
+	# 
+	# @param sig A type signature
+	# @raise [TypeSignatureError] If sig is invalid
 	def assert_valid_type_sig(sig)
 		unless sig.is_a?(Hash)
 			raise TypeSignatureError, "Invalid type signature: type signature is not hash"
@@ -156,6 +214,14 @@ module Rtype
 		assert_valid_return_type_sig(sig.first[1])
 	end
 
+	# Checks the arguments type signature is valid
+	# 
+	# e.g.
+	# `[Integer]`, `{key: "value"} are valid.
+	# `Integer` is invalid
+	# 
+	# @param sig A arguments type signature
+	# @raise [TypeSignatureError] If sig is invalid
 	def assert_valid_arguments_type_sig(sig)
 		if sig.is_a?(Array)
 			sig = sig.dup
@@ -179,6 +245,10 @@ module Rtype
 		end
 	end
 
+	# Checks the type behavior is valid
+	# 
+	# @param sig A type behavior
+	# @raise [TypeSignatureError] If sig is invalid
 	def assert_valid_argument_type_sig_element(sig)
 		case sig
 		when Rtype::Behavior::Base
@@ -203,42 +273,19 @@ module Rtype
 		end
 	end
 
+	# @see #assert_valid_argument_type_sig_element
 	def assert_valid_return_type_sig(sig)
 		assert_valid_argument_type_sig_element(sig)
 	end
-
-private
-	def define_typed_method_to_proxy(owner, method_name, expected_args, expected_kwargs, return_sig)
-		# `send` is faster than `method(...).call`
-		owner.send(:_rtype_proxy).send :define_method, method_name do |*args, **kwargs, &block|
-			if kwargs.empty?
-				::Rtype::assert_arguments_type(expected_args, args)
-				result = super(*args, &block)
-			else
-				::Rtype::assert_arguments_type_with_keywords(expected_args, args, expected_kwargs, kwargs)
-				result = super(*args, **kwargs, &block)
-			end
-			::Rtype::assert_return_type(return_sig, result)
-			result
-		end
-		nil
-	end
 	
-	def ordinalize_number(num)
-	    if (11..13).include?(num % 100)
-			"#{num}th"
-	    else
-			case num % 10
-			when 1; "#{num}st"
-			when 2; "#{num}nd"
-			when 3; "#{num}rd"
-			else "#{num}th"
-			end
-	    end
-	end
-public
 	unless respond_to?(:valid?)
-	# validate argument type
+	# Checks the value is valid for the type behavior
+	# 
+	# @param expected A type behavior
+	# @param value
+	# @return [Boolean]
+	# 
+	# @raise [TypeSignatureError] If expected is invalid
 	def valid?(expected, value)
 		case expected
 		when Module
@@ -272,6 +319,14 @@ public
 	end
 
 	unless respond_to?(:assert_arguments_type)
+	# Validates arguments
+	# 
+	# @param [Array] expected_args A type signature for non-keyword arguments
+	# @param args
+	# @return [void]
+	# 
+	# @raise [TypeSignatureError] If expected_args is invalid
+	# @raise [ArgumentTypeError] If args is invalid
 	def assert_arguments_type(expected_args, args)
 		e_len = expected_args.length
 		# `length.times` is faster than `each_with_index`
@@ -283,10 +338,21 @@ public
 				raise ArgumentTypeError, "#{arg_message(i)}\n" + type_error_message(expected, value)
 			end
 		end
+		nil
 	end
 	end
 
 	unless respond_to?(:assert_arguments_type_with_keywords)
+	# Validates arguments and keyword arguments
+	# 
+	# @param [Array] expected_args A type signature for non-keyword arguments
+	# @param args Arguments
+	# @param [Hash] expected_kwargs A type signature for keyword arguments
+	# @param kwargs Keword arguments
+	# @return [void]
+	# 
+	# @raise [TypeSignatureError] If expected_args or expected_kwargs are invalid
+	# @raise [ArgumentTypeError] If args or kwargs are invalid
 	def assert_arguments_type_with_keywords(expected_args, args, expected_kwargs, kwargs)
 		e_len = expected_args.length
 		# `length.times` is faster than `each_with_index`
@@ -307,14 +373,62 @@ public
 				end
 			end
 		end
+		nil
 	end
 	end
 
+	# Validates result
+	# 
+	# @param expected A type behavior
+	# @param result
+	# @return [void]
+	# 
+	# @raise [TypeSignatureError] If expected is invalid
+	# @raise [ReturnTypeError] If result is invalid
 	unless respond_to?(:assert_return_type)
 	def assert_return_type(expected, result)
 		unless valid?(expected, result)
 			raise ReturnTypeError, "for return:\n" + type_error_message(expected, result)
 		end
+		nil
 	end
+	end
+
+private
+	# @param owner
+	# @param [Symbol] method_name
+	# @param expected_args
+	# @param expected_kwargs
+	# @param return_sig
+	# @return [void]
+	def define_typed_method_to_proxy(owner, method_name, expected_args, expected_kwargs, return_sig)
+		# `send` is faster than `method(...).call`
+		owner.send(:_rtype_proxy).send :define_method, method_name do |*args, **kwargs, &block|
+			if kwargs.empty?
+				::Rtype::assert_arguments_type(expected_args, args)
+				result = super(*args, &block)
+			else
+				::Rtype::assert_arguments_type_with_keywords(expected_args, args, expected_kwargs, kwargs)
+				result = super(*args, **kwargs, &block)
+			end
+			::Rtype::assert_return_type(return_sig, result)
+			result
+		end
+		nil
+	end
+	
+	# @param [Integer] num
+	# @return [String]
+	def ordinalize_number(num)
+	    if (11..13).include?(num % 100)
+			"#{num}th"
+	    else
+			case num % 10
+			when 1; "#{num}st"
+			when 2; "#{num}nd"
+			when 3; "#{num}rd"
+			else "#{num}th"
+			end
+	    end
 	end
 end

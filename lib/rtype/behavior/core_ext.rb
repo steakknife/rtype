@@ -21,4 +21,8 @@ class Array
 	def self.of(type_sig)
 		::Rtype::Behavior::TypedArray.new(type_sig)
 	end
+	
+	def comb
+		::Rtype::Behavior::And[*self]
+	end
 end

@@ -259,7 +259,7 @@ func({msg: "hello hash"}, {}) # hello hash
 ```
 
 #### rtype with attr_accessor
-`rtype_accessor` : calls `attr_accessor` if the accessor method(getter/setter) is not defined, and makes it typed method
+`rtype_accessor` : calls `attr_accessor` if the accessor method(getter/setter) is not defined. and makes it typed
 
 You can use `rtype_accessor_self` for static accessor.
 
@@ -418,7 +418,7 @@ end
 ```
 
 #### Outside of module (root)
-Outside of module, annotation mode don't works. You must specify method name.
+In the outside of module, annotation mode don't works. You must specify method name.
 
 ```ruby
 rtype :say, [String] => Any
@@ -432,7 +432,7 @@ rtype [String] => Any
 # (ArgumentError) Annotation mode not working out of module
 ```
 
-#### Static(singleton) method
+#### Class method
 rtype annotation mode works both instance and class method
 
 ```ruby
