@@ -19,7 +19,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 @JRubyModule(name="Rtype")
 public class Rtype {
-	public static String JAVA_EXT_VERSION = "0.6.0";
+	public static String JAVA_EXT_VERSION = "0.6.1";
 	
 	public static Ruby ruby;
 	public static RubyModule rtype;
