@@ -54,7 +54,7 @@ require 'rtype'
 Rtype itself is pure-ruby gem. but you can make it more faster by using native extension.
 
 #### Native extension for MRI
-Just run
+Run
 ```ruby
 gem install rtype-native
 ```
@@ -62,10 +62,10 @@ or add to your `Gemfile`:
 ```ruby
 gem 'rtype-native'
 ```
-then, Rtype use it. (Do not `require 'rtype-native'`)
+then, Rtype uses it. (Do not `require 'rtype-native'`)
 
 #### Java extension for JRuby
-Just run
+Run
 ```ruby
 gem install rtype-java
 ```
@@ -73,7 +73,7 @@ or add to your `Gemfile`:
 ```ruby
 gem 'rtype-java'
 ```
-then, Rtype use it. (Do not `require 'rtype-java'`)
+then, Rtype uses it. (Do not `require 'rtype-java'`)
 
 ## Usage
 
@@ -119,8 +119,7 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
     
   - `And` : Ensures a value is valid for all the types
     - `Rtype::and(*types)`, `Rtype::Behavior::And[*types]`, `include Rtype::Behavior; And[...]`
-    - `Array#comb`
-    - `Object#and(*others)`
+    - `Array#comb`, `Object#and(*others)`
     
   - `Xor` : Ensures a value is valid for only one of the types
     - `Rtype::xor(*types)`, `Rtype::Behavior::Xor[*types]`, `include Rtype::Behavior; Xor[...]`
@@ -132,8 +131,7 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
 
   - `Nilable` : Ensures a value can be nil
     - `Rtype::nilable(type)`, `Rtype::Behavior::Nilable[type]`, `include Rtype::Behavior; Nilable[...]`
-    - `Object#nilable`
-    - `Object#or_nil`
+    - `Object#nilable`, `Object#or_nil`
 
   - You can create custom behavior by extending `Rtype::Behavior::Base`
 
@@ -344,7 +342,7 @@ Example.new.and_test("A string") # Works!
 ```
 
 #### Combined duck type
-Application of duck typing and combined type
+Duck typing and combined type
 
 ```ruby
 require 'rtype'
@@ -463,7 +461,7 @@ Example::say_ya(3) #say ya ya ya
 ```
 
 #### Checking type information
-This is just the 'information'
+This is just 'information'
 
 Any change of this doesn't affect type checking
 
