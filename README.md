@@ -3,8 +3,6 @@
 [![Build Status](https://travis-ci.org/sputnikgugja/rtype.svg?branch=master)](https://travis-ci.org/sputnikgugja/rtype)
 [![Coverage Status](https://coveralls.io/repos/github/sputnikgugja/rtype/badge.svg?branch=master)](https://coveralls.io/github/sputnikgugja/rtype?branch=master)
 
-You can do the type checking in Ruby with this gem!
-
 ```ruby
 require 'rtype'
 
@@ -114,25 +112,25 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
   - A value must be nil
   
 - Special Behaviors
-  - `Rtype::TypedArray` : Ensures a value is an array with the type (type signature)
+  - `TypedArray` : Ensures a value is an array with the type (type signature)
     - `Array::of(type)` (recommended)
     - `Rtype::Behavior::TypedArray[type]`
     - Example: [TypedArray](#typed-array)
     
-  - `Rtype::and(*types)` : Ensures a value is valid for all the types
+  - `And` : Ensures a value is valid for all the types
     - `Rtype::and(*types)`, `Rtype::Behavior::And[*types]`, `include Rtype::Behavior; And[...]`
     - `Array#comb`
     - `Object#and(*others)`
     
-  - `Rtype::xor(*types)` : Ensures a value is valid for only one of the types
+  - `Xor` : Ensures a value is valid for only one of the types
     - `Rtype::xor(*types)`, `Rtype::Behavior::Xor[*types]`, `include Rtype::Behavior; Xor[...]`
     - `Object#xor(*others)`
 
-  - `Rtype::not(*types)` : Ensures a value is not valid for all the types
+  - `Not` : Ensures a value is not valid for all the types
     - `Rtype::not(*types)`, `Rtype::Behavior::Not[*types]`, `include Rtype::Behavior; Not[...]`
     - `Object#not`
 
-  - `Rtype::nilable(type)` : Ensures a value can be nil
+  - `Nilable` : Ensures a value can be nil
     - `Rtype::nilable(type)`, `Rtype::Behavior::Nilable[type]`, `include Rtype::Behavior; Nilable[...]`
     - `Object#nilable`
     - `Object#or_nil`
@@ -324,7 +322,7 @@ require 'rtype'
 class Example
   rtype [[String, :func].comb] => Any
   # also works:
-  # rtype [Rtype::and(String, :func)] => Any
+  # rtype [Rtype.and(String, :func)] => Any
   def and_test(arg)
   end
 end
