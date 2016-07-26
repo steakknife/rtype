@@ -3,8 +3,6 @@
 [![Build Status](https://travis-ci.org/sputnikgugja/rtype.svg?branch=master)](https://travis-ci.org/sputnikgugja/rtype)
 [![Coverage Status](https://coveralls.io/repos/github/sputnikgugja/rtype/badge.svg?branch=master)](https://coveralls.io/github/sputnikgugja/rtype?branch=master)
 
-You can do the type checking in Ruby with this gem!
-
 ```ruby
 require 'rtype'
 
@@ -38,9 +36,10 @@ Test::invert(state: 0)
 
 ## Features
 - Provides type checking for arguments and return
-- Supports type checking for [keyword argument](#keyword-argument)
+- [Keyword Argument](#keyword-argument)
 - [Type checking for hash elements](#hash)
-- [Duck typing](#duck-typing)
+- [Duck Typing](#duck-typing)
+- [Typed Array](#typed-array)
 - Custom type behavior
 
 ## Installation
@@ -55,7 +54,7 @@ require 'rtype'
 Rtype itself is pure-ruby gem. but you can make it more faster by using native extension.
 
 #### Native extension for MRI
-Just run
+Run
 ```ruby
 gem install rtype-native
 ```
@@ -63,10 +62,10 @@ or add to your `Gemfile`:
 ```ruby
 gem 'rtype-native'
 ```
-then, Rtype use it. (Do not `require 'rtype-native'`)
+then, Rtype uses it. (Do not `require 'rtype-native'`)
 
 #### Java extension for JRuby
-Just run
+Run
 ```ruby
 gem install rtype-java
 ```
@@ -74,7 +73,7 @@ or add to your `Gemfile`:
 ```ruby
 gem 'rtype-java'
 ```
-then, Rtype use it. (Do not `require 'rtype-java'`)
+then, Rtype uses it. (Do not `require 'rtype-java'`)
 
 ## Usage
 
@@ -113,28 +112,26 @@ then, Rtype use it. (Do not `require 'rtype-java'`)
   - A value must be nil
   
 - Special Behaviors
-  - `Rtype::TypedArray` : Ensures a value is an array with the type (type signature)
+  - `TypedArray` : Ensures a value is an array with the type (type signature)
     - `Array::of(type)` (recommended)
     - `Rtype::Behavior::TypedArray[type]`
     - Example: [TypedArray](#typed-array)
     
-  - `Rtype::and(*types)` : Ensures a value is valid for all the types
+  - `And` : Ensures a value is valid for all the types
     - `Rtype::and(*types)`, `Rtype::Behavior::And[*types]`, `include Rtype::Behavior; And[...]`
-    - `Array#comb`
-    - `Object#and(*others)`
+    - `Array#comb`, `Object#and(*others)`
     
-  - `Rtype::xor(*types)` : Ensures a value is valid for only one of the types
+  - `Xor` : Ensures a value is valid for only one of the types
     - `Rtype::xor(*types)`, `Rtype::Behavior::Xor[*types]`, `include Rtype::Behavior; Xor[...]`
     - `Object#xor(*others)`
 
-  - `Rtype::not(*types)` : Ensures a value is not valid for all the types
+  - `Not` : Ensures a value is not valid for all the types
     - `Rtype::not(*types)`, `Rtype::Behavior::Not[*types]`, `include Rtype::Behavior; Not[...]`
     - `Object#not`
 
-  - `Rtype::nilable(type)` : Ensures a value can be nil
+  - `Nilable` : Ensures a value can be nil
     - `Rtype::nilable(type)`, `Rtype::Behavior::Nilable[type]`, `include Rtype::Behavior; Nilable[...]`
-    - `Object#nilable`
-    - `Object#or_nil`
+    - `Object#nilable`, `Object#or_nil`
 
   - You can create custom behavior by extending `Rtype::Behavior::Base`
 
@@ -323,7 +320,7 @@ require 'rtype'
 class Example
   rtype [[String, :func].comb] => Any
   # also works:
-  # rtype [Rtype::and(String, :func)] => Any
+  # rtype [Rtype.and(String, :func)] => Any
   def and_test(arg)
   end
 end
@@ -345,7 +342,7 @@ Example.new.and_test("A string") # Works!
 ```
 
 #### Combined duck type
-Application of duck typing and combined type
+Duck typing and combined type
 
 ```ruby
 require 'rtype'
@@ -464,7 +461,7 @@ Example::say_ya(3) #say ya ya ya
 ```
 
 #### Checking type information
-This is just the 'information'
+This is just 'information'
 
 Any change of this doesn't affect type checking
 
