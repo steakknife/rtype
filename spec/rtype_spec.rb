@@ -474,6 +474,68 @@ describe Rtype do
 					instance.return_nil([])
 				end
 			end
+			
+			describe 'Numeric check' do
+				it 'Num (Numeric)' do
+					klass.send :rtype, :return_nil, [Num >= 0] => Any
+					expect { instance.return_nil("hello") }.to raise_error Rtype::ArgumentTypeError
+					expect { instance.return_nil(-1) }.to raise_error Rtype::ArgumentTypeError
+					instance.return_nil(2)
+					instance.return_nil(2.0)
+					
+					klass.send :rtype, :return_nil, [Num > 0] => Any
+					expect { instance.return_nil("non numeric") }.to raise_error Rtype::ArgumentTypeError
+					expect { instance.return_nil(0) }.to raise_error Rtype::ArgumentTypeError
+					
+					klass.send :rtype, :return_nil, [Num < 0] => Any
+					expect { instance.return_nil("non numeric") }.to raise_error Rtype::ArgumentTypeError
+					expect { instance.return_nil(0) }.to raise_error Rtype::ArgumentTypeError
+					
+					klass.send :rtype, :return_nil, [Num <= 0] => Any
+					expect { instance.return_nil("non numeric") }.to raise_error Rtype::ArgumentTypeError
+					expect { instance.return_nil(1) }.to raise_error Rtype::ArgumentTypeError
+				end
+				
+				it 'Int (Integer)' do
+					klass.send :rtype, :return_nil, [Int >= 0] => Any
+					expect { instance.return_nil("hello") }.to raise_error Rtype::ArgumentTypeError
+					expect { instance.return_nil(1.0) }.to raise_error Rtype::ArgumentTypeError
+					expect { instance.return_nil(-1) }.to raise_error Rtype::ArgumentTypeError
+					instance.return_nil(2)
+					
+					klass.send :rtype, :return_nil, [Int > 0] => Any
+					expect { instance.return_nil(1.0) }.to raise_error Rtype::ArgumentTypeError
+					expect { instance.return_nil(0) }.to raise_error Rtype::ArgumentTypeError
+					
+					klass.send :rtype, :return_nil, [Int < 0] => Any
+					expect { instance.return_nil(-1.0) }.to raise_error Rtype::ArgumentTypeError
+					expect { instance.return_nil(0) }.to raise_error Rtype::ArgumentTypeError
+					
+					klass.send :rtype, :return_nil, [Int <= 0] => Any
+					expect { instance.return_nil(0.0) }.to raise_error Rtype::ArgumentTypeError
+					expect { instance.return_nil(1) }.to raise_error Rtype::ArgumentTypeError
+				end
+				
+				it 'Flo (Float)' do
+					klass.send :rtype, :return_nil, [Flo >= 0] => Any
+					expect { instance.return_nil("hello") }.to raise_error Rtype::ArgumentTypeError
+					expect { instance.return_nil(1) }.to raise_error Rtype::ArgumentTypeError
+					expect { instance.return_nil(-1.0) }.to raise_error Rtype::ArgumentTypeError
+					instance.return_nil(2.0)
+					
+					klass.send :rtype, :return_nil, [Flo > 0] => Any
+					expect { instance.return_nil(1) }.to raise_error Rtype::ArgumentTypeError
+					expect { instance.return_nil(0.0) }.to raise_error Rtype::ArgumentTypeError
+					
+					klass.send :rtype, :return_nil, [Flo < 0] => Any
+					expect { instance.return_nil(-1) }.to raise_error Rtype::ArgumentTypeError
+					expect { instance.return_nil(0.0) }.to raise_error Rtype::ArgumentTypeError
+					
+					klass.send :rtype, :return_nil, [Flo <= 0] => Any
+					expect { instance.return_nil(0) }.to raise_error Rtype::ArgumentTypeError
+					expect { instance.return_nil(1.0) }.to raise_error Rtype::ArgumentTypeError
+				end
+			end
 		end
 	end
 

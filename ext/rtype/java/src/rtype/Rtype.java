@@ -10,7 +10,6 @@ import org.jruby.RubyHash;
 import org.jruby.RubyModule;
 import org.jruby.RubyProc;
 import org.jruby.RubyRegexp;
-import org.jruby.RubyString;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
 import org.jruby.exceptions.RaiseException;
@@ -19,7 +18,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 @JRubyModule(name="Rtype")
 public class Rtype {
-	public static String JAVA_EXT_VERSION = "0.6.3";
+	public static String JAVA_EXT_VERSION = "0.6.4";
 	
 	public static Ruby ruby;
 	public static RubyModule rtype;
@@ -160,7 +159,7 @@ public class Rtype {
 		RubyArray rExptArgs = (RubyArray) expectedArgs;
 		RubyArray rArgs = (RubyArray) args;
 		int e_len = rExptArgs.getLength();
-		int len = rExptArgs.getLength();
+		int len = rArgs.getLength();
 		
 		for(int i = 0; i < len; i++) {
 			if(i >= e_len) break;

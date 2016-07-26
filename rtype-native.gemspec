@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   s.add_dependency "rtype", Rtype::VERSION
 
   # s.add_development_dependency "bundler", "~> 1.10"
-  s.add_development_dependency "rake", "~> 10.0"
+  s.add_development_dependency "rake", "~> 11.0"
   s.add_development_dependency "rspec"
   s.add_development_dependency "coveralls"
 

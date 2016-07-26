@@ -322,7 +322,7 @@ module Rtype
 	# Validates arguments
 	# 
 	# @param [Array] expected_args A type signature for non-keyword arguments
-	# @param args
+	# @param [Array] args
 	# @return [void]
 	# 
 	# @raise [TypeSignatureError] If expected_args is invalid
@@ -346,9 +346,9 @@ module Rtype
 	# Validates arguments and keyword arguments
 	# 
 	# @param [Array] expected_args A type signature for non-keyword arguments
-	# @param args Arguments
+	# @param [Array] args Arguments
 	# @param [Hash] expected_kwargs A type signature for keyword arguments
-	# @param kwargs Keword arguments
+	# @param [Hash] kwargs Keword arguments
 	# @return [void]
 	# 
 	# @raise [TypeSignatureError] If expected_args or expected_kwargs are invalid

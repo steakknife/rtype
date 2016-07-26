@@ -26,3 +26,99 @@ class Array
 		::Rtype::Behavior::And[*self]
 	end
 end
+
+class Num
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.>(x)
+		lambda { |obj| obj.is_a?(Numeric) && obj > x }
+	end
+
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.>=(x)
+		lambda { |obj| obj.is_a?(Numeric) && obj >= x }
+	end
+
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.<(x)
+		lambda { |obj| obj.is_a?(Numeric) && obj < x }
+	end
+
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.<=(x)
+		lambda { |obj| obj.is_a?(Numeric) && obj <= x }
+	end
+	
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.==(x)
+		lambda { |obj| obj.is_a?(Numeric) && obj == x }
+	end
+end
+
+class Int
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.>(x)
+		lambda { |obj| obj.is_a?(Integer) && obj > x }
+	end
+
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.>=(x)
+		lambda { |obj| obj.is_a?(Integer) && obj >= x }
+	end
+
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.<(x)
+		lambda { |obj| obj.is_a?(Integer) && obj < x }
+	end
+
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.<=(x)
+		lambda { |obj| obj.is_a?(Integer) && obj <= x }
+	end
+	
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.==(x)
+		lambda { |obj| obj.is_a?(Integer) && obj == x }
+	end
+end
+
+class Flo
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.>(x)
+		lambda { |obj| obj.is_a?(Float) && obj > x }
+	end
+
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.>=(x)
+		lambda { |obj| obj.is_a?(Float) && obj >= x }
+	end
+
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.<(x)
+		lambda { |obj| obj.is_a?(Float) && obj < x }
+	end
+
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.<=(x)
+		lambda { |obj| obj.is_a?(Float) && obj <= x }
+	end
+	
+	# @param [Numeric] x
+	# @return [Proc]
+	def self.==(x)
+		lambda { |obj| obj.is_a?(Float) && obj == x }
+	end
+end
