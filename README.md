@@ -36,11 +36,12 @@ Test::invert(state: 0)
 
 ## Features
 - Provides type checking for arguments and return
-- [Keyword Argument](#keyword-argument)
+- Provides type checking for [Keyword Argument](#keyword-argument)
 - [Type checking for hash elements](#hash)
 - [Duck Typing](#duck-typing)
 - [Typed Array](#typed-array)
 - Custom type behavior
+- ...
 
 ## Installation
 Run `gem install rtype` or add `gem 'rtype'` to your `Gemfile`
@@ -62,7 +63,7 @@ or add to your `Gemfile`:
 ```ruby
 gem 'rtype-native'
 ```
-then, Rtype uses it. (Do not `require 'rtype-native'`)
+then, Rtype uses it. (**Do not** `require 'rtype-native'`)
 
 #### Java extension for JRuby
 Run
@@ -73,65 +74,71 @@ or add to your `Gemfile`:
 ```ruby
 gem 'rtype-java'
 ```
-then, Rtype uses it. (Do not `require 'rtype-java'`)
+then, Rtype uses it. (**Do not** `require 'rtype-java'`)
 
 ## Usage
 
 ### Supported Type Behaviors
 - `Module`
-  - A value must be an instance of the module/class or one of its superclasses (`is_a?`)
-  - `Any` : An alias for `BasicObject` (means Any Object)
+  - Value must be of this module (`is_a?`)
+  - `Any` : Alias for `BasicObject` (means Any Object)
   - `Boolean` : `true` or `false`
 - `Symbol`
-  - A value must have(respond to) a method with the name
+  - Value must respond to a method with this name
 - `Regexp`
-  - A value must match the regexp pattern
+  - Value must match this regexp pattern
 - `Range`
-  - A value must be included in the range
+  - Value must be included in this range
 - `Array`
-  - A value can be any type in the array
+  - Value can be any type in this array
 - `Hash`
-  - A value must be a hash
-  - Each of the value’s elements must be valid
-  - The value's key list must be equal to the hash's key list
+  - Value must be a hash
+  - Each of elements must be valid
+  - Value's keys must be equal to this hash's keys
   - **String** key is **different** from **symbol** key
   - vs. Keyword arguments (e.g.)
-    - `[{}]` is **not** hash type argument. it is keyword argument, because its position is last
-    - `[{}, {}]` is empty hash type argument (first), and one empty keyword argument (second)
-    - `[{}, {}, {}]` is two empty hash type argument (first, second), and empty keyword argument (last)
+    - `[{}]` is **not** hash argument. it is keyword argument, because its position is last
+    - `[{}, {}]` is hash argument (first) and keyword argument (second)
+    - `[{}, {}, {}]` is two hash argument (first, second) and keyword argument (last)
     - `{}` is keyword argument. non-keyword arguments must be in array.
   - Of course, nested hash works
   - Example: [Hash](#hash)
 - `Proc`
-  - A value must return a truthy value for the proc
+  - Value must return a truthy value for this proc
 - `true`
-  - A value must be **truthy**
+  - Value must be truthy
 - `false`
-  - A value must be **falsy**
+  - Value must be falsy
 - `nil`
-  - A value must be nil
+  - Value must be nil
   
 - Special Behaviors
-  - `TypedArray` : Ensures a value is an array with the type (type signature)
+  - `TypedArray` : Ensures value is an array with the type (type signature)
     - `Array::of(type)` (recommended)
-    - `Rtype::Behavior::TypedArray[type]`
+    - or `Rtype::Behavior::TypedArray[type]`
     - Example: [TypedArray](#typed-array)
+  
+  - `Num, Int, Flo` : Numeric check
+    - `Num/Int/Flo >/>=/</<=/== x`
+    - e.g. `Num >= 2` means value must be a `Numeric` and >= 2
+    - e.g. `Int >= 2` means value must be a `Integer` and >= 2
+    - e.g. `Flo >= 2` means value must be a `Float` and >= 2
+  
+  - `And` : Ensures value is valid for all given types
+    - `Rtype::and(*types)`, `Rtype::Behavior::And[*types]`
+    - or `Array#comb`, `Object#and(*others)`
     
-  - `And` : Ensures a value is valid for all the types
-    - `Rtype::and(*types)`, `Rtype::Behavior::And[*types]`, `include Rtype::Behavior; And[...]`
-    - `Array#comb`, `Object#and(*others)`
-    
-  - `Xor` : Ensures a value is valid for only one of the types
-    - `Rtype::xor(*types)`, `Rtype::Behavior::Xor[*types]`, `include Rtype::Behavior; Xor[...]`
-    - `Object#xor(*others)`
+  - `Xor` : Ensures value is valid for only one of given types
+    - `Rtype::xor(*types)`, `Rtype::Behavior::Xor[*types]`
+    - or `Object#xor(*others)`
 
-  - `Not` : Ensures a value is not valid for all the types
-    - `Rtype::not(*types)`, `Rtype::Behavior::Not[*types]`, `include Rtype::Behavior; Not[...]`
-    - `Object#not`
+  - `Not` : Ensures value is not valid for all given types
+    - `Rtype::not(*types)`, `Rtype::Behavior::Not[*types]`
+    - or `Object#not`
 
-  - `Nilable` : Ensures a value can be nil
-    - `Rtype::nilable(type)`, `Rtype::Behavior::Nilable[type]`, `include Rtype::Behavior; Nilable[...]`
-    - `Object#nilable`, `Object#or_nil`
+  - `Nilable` : Value can be nil
+    - `Rtype::nilable(type)`, `Rtype::Behavior::Nilable[type]`
+    - or `Object#nilable`, `Object#or_nil`
 
   - You can create custom behavior by extending `Rtype::Behavior::Base`
 
@@ -231,7 +238,7 @@ def func(hash)
   puts hash[:msg]
 end
 
-# last hash is keyword arguments
+# last hash is not hash argument but keyword arguments
 func({}, {})
 # (Rtype::ArgumentTypeError) for 1st argument:
 # Expected {} to be a hash with 1 elements:
@@ -312,83 +319,18 @@ sum([1, 2, 3]) # => 6
 sum([1.0, 2, 3]) # => 6.0
 ```
 
-#### Combined type
-```ruby
-### TEST 1 ###
-require 'rtype'
-
-class Example
-  rtype [[String, :func].comb] => Any
-  # also works:
-  # rtype [Rtype.and(String, :func)] => Any
-  def and_test(arg)
-  end
-end
-
-Example.new.and_test("A string")
-# (Rtype::ArgumentTypeError) for 1st argument:
-# Expected "A string" to be a String
-# AND Expected "A string" to respond to :func
-```
-```ruby
-### TEST 2 ###
-# ... require rtype and define Example the same as above ...
-
-class String
-  def func; end
-end
-
-Example.new.and_test("A string") # Works!
-```
-
-#### Combined duck type
-Duck typing and combined type
-
-```ruby
-require 'rtype'
-
-module Game
-  ENEMY = [
-    :name,
-    :level
-  ].comb
-  
-  class Player < Entity
-    include Rtype::Behavior
-
-    rtype [ENEMY] => Any
-    def attacks(enemy)
-      "Player attacks '#{enemy.name}' (level #{enemy.level})!"
-    end
-  end
-  
-  class Slime < Entity
-    def name
-      "Powerful Slime"
-    end
-    
-    def level
-      123
-    end
-  end
-end
-
-Game::Player.new.attacks Game::Slime.new
-# Player attacks 'Powerful Slime' (level 123)!
-```
-
-#### Position of `rtype` && (specifying method name || annotation mode) && (symbol || string)
+#### `rtype`
 ```ruby
 require 'rtype'
 
 class Example
-  # Recommended. Annotation mode (no method name required)
+  # Recommended. With annotation mode (no method name required)
   rtype [Integer, String] => String
   def hello_world(i, str)
     puts "Hello? #{i} #{st
   end
 
-  # Works (specifying method name)
+  # Works (with specifying method name)
   rtype :hello_world, [Integer, String] => String
   def hello_world(i, str)
     puts "Hello? #{i} #{st
@@ -406,7 +348,7 @@ class Example
     puts "Hello? #{i} #{str}"
   end
 
-  # Doesn't work. `rtype` works for following (next) method
+  # Doesn't work. annotation mode works for following (next) method
   def hello_world_four(i, str)
     puts "Hello? #{i} #{str}"
   end
@@ -414,8 +356,8 @@ class Example
 end
 ```
 
-#### Outside of module (root)
-In the outside of module, annotation mode don't works. You must specify method name.
+#### In the outside of module (root)
+In the outside of module, annotation mode doesn't work. You must specify method name.
 
 ```ruby
 rtype :say, [String] => Any
@@ -426,11 +368,11 @@ end
 Test.new.say "Hello" # Hello
 
 rtype [String] => Any
-# (ArgumentError) Annotation mode not working out of module
+# (ArgumentError) Annotation mode not working in the outside of module
 ```
 
 #### Class method
-rtype annotation mode works both instance and class method
+Annotation mode works for both instance method and class method
 
 ```ruby
 require 'rtype'
@@ -460,7 +402,7 @@ end
 Example::say_ya(3) #say ya ya ya
 ```
 
-#### Checking type information
+#### Type information
 This is just 'information'
 
 Any change of this doesn't affect type checking
