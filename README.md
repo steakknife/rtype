@@ -40,6 +40,7 @@ Test::invert(state: 0)
 - [Type checking for hash elements](#hash)
 - [Duck Typing](#duck-typing)
 - [Typed Array](#typed-array)
+- [Numeric check](#special-behaviors). e.g. `Int >= 0`
 - Custom type behavior
 - ...
 
@@ -79,22 +80,21 @@ then, Rtype uses it. (**Do not** `require 'rtype-java'`)
 ## Usage
 
 ### Supported Type Behaviors
-- `Module`
-  - Value must be of this module (`is_a?`)
+- `Module` : Value must be of this module (`is_a?`)
   - `Any` : Alias for `BasicObject` (means Any Object)
   - `Boolean` : `true` or `false`
-- `Symbol`
-  - Value must respond to a method with this name
-- `Regexp`
-  - Value must match this regexp pattern
-- `Range`
-  - Value must be included in this range
-- `Array`
-  - Value can be any type in this array
+- `Symbol` : Value must respond to a method with this name
+- `Regexp` : Value must match this regexp pattern
+- `Range` : Value must be included in this range
+- `Array` : Value can be any type in this array
+- `Proc` : Value must return a truthy value for this proc
+- `true` : Value must be truthy
+- `false` : Value must be falsy
+- `nil` : Value must be nil
 - `Hash`
   - Value must be a hash
   - Each of elements must be valid
-  - Value's keys must be equal to this hash's keys
+  - Keys of the value must be equal to keys of this hash
   - **String** key is **different** from **symbol** key
   - vs. Keyword arguments (e.g.)
     - `[{}]` is **not** hash argument. it is keyword argument, because its position is last
@@ -103,44 +103,9 @@ then, Rtype uses it. (**Do not** `require 'rtype-java'`)
     - `{}` is keyword argument. non-keyword arguments must be in array.
   - Of course, nested hash works
   - Example: [Hash](#hash)
-- `Proc`
-  - Value must return a truthy value for this proc
-- `true`
-  - Value must be truthy
-- `false`
-  - Value must be falsy
-- `nil`
-  - Value must be nil
   
-- Special Behaviors
-  - `TypedArray` : Ensures value is an array with the type (type signature)
-    - `Array::of(type)` (recommended)
-    - or `Rtype::Behavior::TypedArray[type]`
-    - Example: [TypedArray](#typed-array)
-  
-  - `Num, Int, Flo` : Numeric check
-    - `Num/Int/Flo >/>=/</<=/== x`
-    - e.g. `Num >= 2` means value must be a `Numeric` and >= 2
-    - e.g. `Int >= 2` means value must be a `Integer` and >= 2
-    - e.g. `Flo >= 2` means value must be a `Float` and >= 2
-  
-  - `And` : Ensures value is valid for all given types
-    - `Rtype::and(*types)`, `Rtype::Behavior::And[*types]`
-    - or `Array#comb`, `Object#and(*others)`
-    
-  - `Xor` : Ensures value is valid for only one of given types
-    - `Rtype::xor(*types)`, `Rtype::Behavior::Xor[*types]`
-    - or `Object#xor(*others)`
-
-  - `Not` : Ensures value is not valid for all given types
-    - `Rtype::not(*types)`, `Rtype::Behavior::Not[*types]`
-    - or `Object#not`
-
-  - `Nilable` : Value can be nil
-    - `Rtype::nilable(type)`, `Rtype::Behavior::Nilable[type]`
-    - or `Object#nilable`, `Object#or_nil`
-
-  - You can create custom behavior by extending `Rtype::Behavior::Base`
+- [Special Behaviors](#special-behaviors)
+  - `TypedArray`, `Num, Int, Flo`, `And`, `Xor`, `Not`, `Nilable`
 
 ### Examples
 
@@ -423,6 +388,36 @@ Example.new.method(:test).argument_type
 Example.new.method(:test).return_type
 # => Any
 ```
+
+#### Special Behaviors
+  - `TypedArray` : Ensures value is an array with the type (type signature)
+    - `Array::of(type)` (recommended)
+    - or `Rtype::Behavior::TypedArray[type]`
+    - Example: [TypedArray](#typed-array)
+  
+  - `Num, Int, Flo` : Numeric check
+    - `Num/Int/Flo >/>=/</<=/== x`
+    - e.g. `Num >= 2` means value must be a `Numeric` and >= 2
+    - e.g. `Int >= 2` means value must be a `Integer` and >= 2
+    - e.g. `Flo >= 2` means value must be a `Float` and >= 2
+  
+  - `And` : Ensures value is valid for all given types
+    - `Rtype::and(*types)`, `Rtype::Behavior::And[*types]`
+    - or `Array#comb`, `Object#and(*others)`
+    
+  - `Xor` : Ensures value is valid for only one of given types
+    - `Rtype::xor(*types)`, `Rtype::Behavior::Xor[*types]`
+    - or `Object#xor(*others)`
+
+  - `Not` : Ensures value is not valid for all given types
+    - `Rtype::not(*types)`, `Rtype::Behavior::Not[*types]`
+    - or `Object#not`
+
+  - `Nilable` : Value can be nil
+    - `Rtype::nilable(type)`, `Rtype::Behavior::Nilable[type]`
+    - or `Object#nilable`, `Object#or_nil`
+
+  - You can create custom behaviors by extending `Rtype::Behavior::Base`
 
 ## Documentation
 [RubyDoc.info](http://www.rubydoc.info/gems/rtype)
