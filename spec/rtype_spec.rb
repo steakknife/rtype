@@ -274,12 +274,12 @@ describe Rtype do
 		describe 'Hash' do
 			it "is right" do
 				klass.send :rtype, :return_arg, [{k: Integer}, {}] => Any
-				instance.return_arg({k: 123}, {})
+				instance.return_arg({k: 123})
 			end
 			it "is wrong args" do
 				klass.send :rtype, :return_arg, [{k: Integer}, {}] => Any
 				expect {
-					instance.return_arg({k: "str"}, {})
+					instance.return_arg({k: "str"})
 				}.to raise_error Rtype::ArgumentTypeError
 			end
 			it "is wrong result" do
@@ -556,15 +556,15 @@ describe Rtype do
 
 			it 'two hash' do
 				klass.send :rtype, :two_args, [{k: Integer}, {k: Integer}, {}] => Any
-				instance.two_args({k: 123}, {k: 456}, {})
+				instance.two_args({k: 123}, {k: 456})
 				expect {
-					instance.two_args({k: 123}, {}, {})
+					instance.two_args({k: 123}, {})
 				}.to raise_error Rtype::ArgumentTypeError
 				expect {
-					instance.two_args({k: 123}, 456, {})
+					instance.two_args({k: 123}, 456)
 				}.to raise_error Rtype::ArgumentTypeError
 				expect {
-					instance.two_args({k: 123}, {k: "str"}, {})
+					instance.two_args({k: 123}, {k: "str"})
 				}.to raise_error Rtype::ArgumentTypeError
 			end
 

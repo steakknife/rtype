@@ -1,4 +1,4 @@
-if const_defined?(RUBY_ENGINE)
+if Object.const_defined?(:RUBY_ENGINE)
 	case RUBY_ENGINE
 	when "jruby"
 		begin
@@ -400,22 +400,27 @@ module Rtype
 private
 	# @param owner
 	# @param [Symbol] method_name
-	# @param expected_args
-	# @param expected_kwargs
+	# @param [Array] expected_args
+	# @param [Hash] expected_kwargs
 	# @param return_sig
 	# @return [void]
 	def define_typed_method_to_proxy(owner, method_name, expected_args, expected_kwargs, return_sig)
-		# `send` is faster than `method(...).call`
-		owner.send(:_rtype_proxy).send :define_method, method_name do |*args, **kwargs, &block|
-			if kwargs.empty?
+		if expected_kwargs.empty?
+			# `send` is faster than `method(...).call`
+			owner.send(:_rtype_proxy).send :define_method, method_name do |*args, &block|
 				::Rtype::assert_arguments_type(expected_args, args)
 				result = super(*args, &block)
-			else
+				::Rtype::assert_return_type(return_sig, result)
+				result
+			end
+		else
+			# `send` is faster than `method(...).call`
+			owner.send(:_rtype_proxy).send :define_method, method_name do |*args, **kwargs, &block|
 				::Rtype::assert_arguments_type_with_keywords(expected_args, args, expected_kwargs, kwargs)
 				result = super(*args, **kwargs, &block)
+				::Rtype::assert_return_type(return_sig, result)
+				result
 			end
-			::Rtype::assert_return_type(return_sig, result)
-			result
 		end
 		nil
 	end

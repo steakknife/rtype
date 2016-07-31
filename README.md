@@ -29,6 +29,7 @@ Test::invert(state: 0)
 
 ## Requirements
 - Ruby >= 2.1
+  - If you need to use old ruby, see [rtype-legacy](https://github.com/sputnikgugja/rtype/tree/master/benchmark/benchmark.rb) for ruby 1.9+
 - MRI
   - If C native extension is used. otherwise it is not required
 - JRuby (JRuby 9000+)
