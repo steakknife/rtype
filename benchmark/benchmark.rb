@@ -19,6 +19,14 @@ puts "Sig version: #{Sig::VERSION}"
 puts "Contracts version: #{Contracts::VERSION}"
 puts "Typecheck version: #{Typecheck::VERSION}"
 
+if !Rtype::NATIVE_EXT_VERSION.nil?
+	puts "Rtype with native extension"
+elsif !Rtype::JAVA_EXT_VERSION.nil?
+	puts "Rtype with java extension"
+else
+	puts "Rtype without native extension"
+end
+
 class PureTest
 	def sum(x, y)
 		x + y

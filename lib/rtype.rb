@@ -1,4 +1,4 @@
-if defined?(RUBY_ENGINE)
+if const_defined?(RUBY_ENGINE)
 	case RUBY_ENGINE
 	when "jruby"
 		begin
@@ -220,7 +220,7 @@ module Rtype
 	# Checks the arguments type signature is valid
 	# 
 	# e.g.
-	# `[Integer]`, `{key: "value"} are valid.
+	# `[Integer]`, `{key: "value"}` are valid.
 	# `Integer` is invalid
 	# 
 	# @param sig A arguments type signature
