@@ -46,6 +46,10 @@ describe Rtype do
 
 			def args_and_kwargs(a, b, c:, d:)
 			end
+			
+			public
+			def public_func
+			end
 
 			protected
 			def protected_func
@@ -751,6 +755,10 @@ describe Rtype do
 				klass.send :rtype, :private_func, [] => Any
 				expect {instance.private_func}.to raise_error NoMethodError
 			end
+			it 'public' do
+				klass.send :rtype, :public_func, [] => Any
+				instance.public_func
+			end
 		end
 
 		context 'with empty argument signature' do
@@ -815,6 +823,32 @@ describe Rtype do
 			}.to raise_error Rtype::ArgumentTypeError
 			AnnotationTest2.new.inst_one(123)
 			AnnotationTest2::static_two(123)
+		end
+
+		context 'when rtype signature duplicated' do
+			it 'the latest have priority' do
+				class PriorityTest1
+					rtype :test_priority, [String] => Any
+					def test_priority(arg)
+					end
+					rtype :test_priority, [Integer] => Any
+				end
+				
+				PriorityTest1.new.test_priority(1)
+				expect { PriorityTest1.new.test_priority("str") }.to raise_error Rtype::ArgumentTypeError
+			end
+			
+			it 'annotation mode have priority in contemporaneous signatures' do
+				class PriorityTest2
+					rtype :test_priority, [String] => Any
+					rtype [Integer] => Any
+					def test_priority(arg)
+					end
+				end
+				
+				PriorityTest2.new.test_priority(1)
+				expect { PriorityTest2.new.test_priority("str") }.to raise_error Rtype::ArgumentTypeError
+			end
 		end
 	end
 
