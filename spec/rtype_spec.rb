@@ -609,7 +609,7 @@ describe Rtype do
 				it 'is hash-type argument, not keyword argument' do
 					klass.send :rtype, :return_arg, [{a: String}, {}] => Any
 					expect {
-						instance.return_arg({a: 123}, {})
+						instance.return_arg({a: 123})
 					}.to raise_error Rtype::ArgumentTypeError
 				end
 			end
@@ -776,7 +776,7 @@ describe Rtype do
 			it 'raises error' do
 				klass.send :rtype, :return_arg, [{a: String}, {}] => Any
 				expect {
-					instance.return_arg({a: "str", b: "str"}, {})
+					instance.return_arg({a: "str", b: "str"})
 				}.to raise_error Rtype::ArgumentTypeError
 			end
 		end
