@@ -73,6 +73,8 @@ private
 	# @see #rtype
 	def rtype_accessor(*accessor_names, type_behavior)
 		accessor_names.each do |accessor_name|
+			raise ArgumentError, "accessor_names contains nil" if accessor_name.nil?
+			
 			accessor_name = accessor_name.to_sym
 			if !respond_to?(accessor_name) || !respond_to?(:"#{accessor_name}=")
 				attr_accessor accessor_name
@@ -98,6 +100,8 @@ private
 	# @see #rtype_self
 	def rtype_accessor_self(*accessor_names, type_behavior)
 		accessor_names.each do |accessor_name|
+			raise ArgumentError, "accessor_names contains nil" if accessor_name.nil?
+			
 			accessor_name = accessor_name.to_sym
 			if !respond_to?(accessor_name) || !respond_to?(:"#{accessor_name}=")
 				singleton_class.send(:attr_accessor, accessor_name)
