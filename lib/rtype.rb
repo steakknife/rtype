@@ -405,6 +405,9 @@ private
 	# @param return_sig
 	# @return [void]
 	def define_typed_method_to_proxy(owner, method_name, expected_args, expected_kwargs, return_sig)
+		priv = owner.private_method_defined?(method_name)
+		prot = owner.protected_method_defined?(method_name)
+		
 		if expected_kwargs.empty?
 			# `send` is faster than `method(...).call`
 			owner.send(:_rtype_proxy).send :define_method, method_name do |*args, &block|
@@ -421,6 +424,12 @@ private
 				::Rtype::assert_return_type(return_sig, result)
 				result
 			end
+		end
+		
+		if priv
+			owner.send(:_rtype_proxy).send(:private, method_name)
+		elsif prot
+			owner.send(:_rtype_proxy).send(:protected, method_name)
 		end
 		nil
 	end

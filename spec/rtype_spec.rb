@@ -744,9 +744,11 @@ describe Rtype do
 
 		describe 'method visibility works' do
 			it 'protected' do
+				klass.send :rtype, :protected_func, [] => Any
 				expect {instance.protected_func}.to raise_error NoMethodError
 			end
 			it 'private' do
+				klass.send :rtype, :private_func, [] => Any
 				expect {instance.private_func}.to raise_error NoMethodError
 			end
 		end
