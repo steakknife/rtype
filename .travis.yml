@@ -1,8 +1,8 @@
 sudo: false
 language: ruby
 script:
- - str="$(rvm current)"
- - if [[ $str = jruby-* ]]; then bundle exec jruby spec/rtype_spec.rb; else bundle exec rake spec; fi
+  - str="$(rvm current)"
+  - if [[ $str = jruby-* ]]; then bundle exec rake spec; bundle exec jruby spec/rtype_spec.rb; else bundle exec rake spec; fi
 
 cache:
 - bundler
