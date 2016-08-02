@@ -204,28 +204,27 @@ def func(hash)
   puts hash[:msg]
 end
 
-# last hash is not hash argument but keyword arguments
-func({}, {})
+func({})
 # (Rtype::ArgumentTypeError) for 1st argument:
 # Expected {} to be a hash with 1 elements:
 # - msg : Expected nil to be a String
 
-func({msg: 123}, {})
+func({msg: 123})
 # (Rtype::ArgumentTypeError) for 1st argument:
 # Expected {:msg=>123} to be a hash with 1 elements:
 # - msg : Expected 123 to be a String
 
-func({msg: "hello", key: 'value'}, {})
+func({msg: "hello", key: 'value'})
 # (Rtype::ArgumentTypeError) for 1st argument:
 # Expected {:msg=>"hello", :key=>"value"} to be a hash with 1 elements:
 # - msg : Expected "hello" to be a String
 
-func({"msg" => "hello hash"}, {})
+func({"msg" => "hello hash"})
 # (Rtype::ArgumentTypeError) for 1st argument:
 # Expected {"msg"=>"hello hash"} to be a hash with 1 elements:
 # - msg : Expected nil to be a String
 
-func({msg: "hello hash"}, {}) # hello hash
+func({msg: "hello hash"}) # hello hash
 ```
 
 #### rtype with attr_accessor

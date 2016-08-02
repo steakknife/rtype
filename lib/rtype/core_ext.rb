@@ -22,7 +22,7 @@ private
 	# Makes the method typed
 	# 
 	# With 'annotation mode', this method works for both instance method and singleton method (class method).
-	# Without it (specifying method name), this method only works for instance method.
+	# Without it, this method only works for instance method.
 	# 
 	# @param [#to_sym, nil] method_name The name of method. If nil, annotation mode works
 	# @param [Hash] type_sig_info A type signature. e.g. [Integer] => Any
