@@ -224,9 +224,11 @@ func({msg: "hello hash"}) # hello hash
 ```
 
 #### rtype with attr_accessor
-`rtype_accessor` : calls `attr_accessor` if the accessor method(getter/setter) is not defined. and makes it typed
+`rtype_accessor` : calls `attr_accessor` if the getter/setter is not defined and makes it typed.
+`rtype_reader` : calls `attr_reader` if the accessor method getter is not defined and makes it typed.
+`rtype_writer` : calls `attr_writer` if the accessor method setter is not defined and makes it typed.
 
-You can use `rtype_accessor_self` for static accessor.
+You can use `rtype_accessor_self`, `rtype_reader_self` and `rtype_writers_self` for static attr_accessors/_readers/_writers, respectively.
 
 ```ruby
 require 'rtype'
