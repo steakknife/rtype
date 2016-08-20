@@ -88,13 +88,23 @@ module Rtype
 	# @raise [ArgumentError] If accessor_name is nil
 	# @raise [TypeSignatureError]
 	def define_typed_accessor(owner, accessor_name, type_behavior)
-		raise ArgumentError, "accessor_name is nil" if accessor_name.nil?
-		getter = accessor_name.to_sym
-		setter = :"#{accessor_name}="
+    define_typed_reader(owner, accessor_name, type_behavior)
+    define_typed_writer(owner, accessor_name, type_behavior)
+	end
+
+	def define_typed_reader(owner, reader_name, type_behavior)
+		raise ArgumentError, "reader_name is nil" if reader_name.nil?
+		getter = reader_name.to_sym
 		valid?(type_behavior, nil)
 		define_typed_method owner, getter, [] => type_behavior
+  end
+
+	def define_typed_writer(owner, writer_name, type_behavior)
+		raise ArgumentError, "writer_name is nil" if writer_name.nil?
+		setter = :"#{writer_name}="
+		valid?(type_behavior, nil)
 		define_typed_method owner, setter, [type_behavior] => Any
-	end
+  end
 
 	# This is just 'information'
 	# Any change of this doesn't affect type checking
