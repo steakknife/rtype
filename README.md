@@ -46,8 +46,16 @@ Test::invert(state: 0)
 - ...
 
 ## Installation
-Run `gem install rtype` or add `gem 'rtype'` to your `Gemfile`
+### Manually
+Run `gem install rtype`
 
+### With Bundler
+Add the following to `Gemfile`
+```ruby
+gem 'rtype'
+gem 'rtype-native', platforms: :mri
+```
+### General
 And add to your `.rb` source file:
 ```ruby
 require 'rtype'
@@ -61,22 +69,10 @@ Run
 ```ruby
 gem install rtype-native
 ```
-or add to your `Gemfile`:
-```ruby
-gem 'rtype-native'
-```
-then, Rtype uses it. (**Do not** `require 'rtype-native'`)
+**Do not** `require 'rtype-native'`
 
-#### Java extension for JRuby
-Run
-```ruby
-gem install rtype-java
-```
-or add to your `Gemfile`:
-```ruby
-gem 'rtype-java'
-```
-then, Rtype uses it. (**Do not** `require 'rtype-java'`)
+#### Java extension for JRuby is automatic
+**Do not** `require 'rtype-java'`
 
 ## Usage
 
@@ -228,9 +224,11 @@ func({msg: "hello hash"}) # hello hash
 ```
 
 #### rtype with attr_accessor
-`rtype_accessor` : calls `attr_accessor` if the accessor method(getter/setter) is not defined. and makes it typed
+`rtype_accessor` : calls `attr_accessor` if the getter/setter is not defined and makes it typed.
+`rtype_reader` : calls `attr_reader` if the accessor method getter is not defined and makes it typed.
+`rtype_writer` : calls `attr_writer` if the accessor method setter is not defined and makes it typed.
 
-You can use `rtype_accessor_self` for static accessor.
+You can use `rtype_accessor_self`, `rtype_reader_self` and `rtype_writers_self` for static attr_accessors/_readers/_writers, respectively.
 
 ```ruby
 require 'rtype'

@@ -1,3 +1,9 @@
+# See also:
+#
+# http://betterspecs.org
+# https://github.com/airbnb/ruby
+# http://batsov.com/rubocop
+#
 require_relative 'spec_helper'
 
 describe Rtype do
@@ -167,17 +173,56 @@ describe Rtype do
 		expect {TestClass.new.value2}.to raise_error Rtype::ReturnTypeError
 	end
 
+	describe 'Kernel#rtype_reader' do
+		class TestClassR
+      rtype_reader :value, String
+
+			def initialize
+				@value = 123
+			end
+		end
+		it { expect {TestClassR.new.value}.to raise_error Rtype::ReturnTypeError }
+	end
+
+	describe 'Kernel#rtype_writer' do
+    context "simple case" do
+      class TestClassW
+        rtype_writer :value, String
+
+        def initialize
+          @value = 123
+        end
+      end
+      it { expect {TestClassW.new.value = 123}.to raise_error Rtype::ArgumentTypeError }
+      it { expect {TestClassW.new.value = ""}.not_to raise_error }
+    end
+
+    context "mixed attr 1" do
+      class TestClassW0
+        rtype_writer :value, String
+        attr_reader :value
+
+        def initialize
+          @value = 123
+        end
+      end
+      it { expect {TestClassW0.new.value}.not_to raise_error }
+      it { expect {TestClassW0.new.value = ""}.not_to raise_error }
+      it { expect {TestClassW0.new.value = 123}.to raise_error Rtype::ArgumentTypeError }
+    end
+	end
+
 	it 'Kernel#rtype_accessor_self' do
-		class TestClass
+		class TestClassS
 			@@value = 123
 			@@value2 = 123
 
 			rtype_accessor_self :value, :value2, String
 		end
-		expect {TestClass::value = 123}.to raise_error Rtype::ArgumentTypeError
-		expect {TestClass::value}.to raise_error Rtype::ReturnTypeError
-		expect {TestClass::value2 = 123}.to raise_error Rtype::ArgumentTypeError
-		expect {TestClass::value2}.to raise_error Rtype::ReturnTypeError
+		expect {TestClassS::value = 123}.to raise_error Rtype::ArgumentTypeError
+		expect {TestClassS::value}.to raise_error Rtype::ReturnTypeError
+		expect {TestClassS::value2 = 123}.to raise_error Rtype::ArgumentTypeError
+		expect {TestClassS::value2}.to raise_error Rtype::ReturnTypeError
 	end
 
 	describe 'Test type behaviors' do

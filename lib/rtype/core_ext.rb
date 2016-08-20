@@ -72,18 +72,55 @@ private
 	# @raise [TypeSignatureError] If type_behavior is invalid
 	# @see #rtype
 	def rtype_accessor(*accessor_names, type_behavior)
-		accessor_names.each do |accessor_name|
-			raise ArgumentError, "accessor_names contains nil" if accessor_name.nil?
+    rtype_reader(*accessor_names, type_behavior)
+    rtype_writer(*accessor_names, type_behavior)
+	end
+
+	# Makes the getter methods typed
+	# 
+	# @param [Array<#to_sym>] accessor_names
+	# @param type_behavior A type behavior
+	# @return [void]
+	# 
+	# @raise [ArgumentError] If reader_names contains nil
+	# @raise [TypeSignatureError] If type_behavior is invalid
+	# @see #rtype
+	def rtype_reader(*reader_names, type_behavior)
+		reader_names.each do |reader_name|
+			raise ArgumentError, "reader_names contains nil" if reader_name.nil?
 			
-			accessor_name = accessor_name.to_sym
-			if !respond_to?(accessor_name) || !respond_to?(:"#{accessor_name}=")
-				attr_accessor accessor_name
-			end
+			reader_name = reader_name.to_sym
+      attr_reader reader_name unless respond_to?(reader_name)
 
 			if is_a?(Module)
-				::Rtype::define_typed_accessor(self, accessor_name, type_behavior)
+				::Rtype::define_typed_reader(self, reader_name, type_behavior)
 			else
-				rtype_accessor_self(accessor_name, type_behavior)
+				rtype_reader_self(reader_name, type_behavior)
+			end
+		end
+		nil
+	end
+
+	# Makes the setter methods typed
+	# 
+	# @param [Array<#to_sym>] writer_names
+	# @param type_behavior A type behavior
+	# @return [void]
+	# 
+	# @raise [ArgumentError] If writernames contains nil
+	# @raise [TypeSignatureError] If type_behavior is invalid
+	# @see #rtype
+	def rtype_writer(*writer_names, type_behavior)
+		writer_names.each do |writer_name|
+			raise ArgumentError, "writer_names contains nil" if writer_name.nil?
+			
+			writer_name = writer_name.to_sym
+      attr_writer writer_name unless respond_to?(:"#{writer_name}=")
+
+			if is_a?(Module)
+				::Rtype::define_typed_writer(self, writer_name, type_behavior)
+			else
+				rtype_writer_self(writer_name, type_behavior)
 			end
 		end
 		nil
@@ -99,14 +136,50 @@ private
 	# @raise [TypeSignatureError] If type_behavior is invalid
 	# @see #rtype_self
 	def rtype_accessor_self(*accessor_names, type_behavior)
-		accessor_names.each do |accessor_name|
-			raise ArgumentError, "accessor_names contains nil" if accessor_name.nil?
+    rtype_reader_self(*accessor_names, type_behavior)
+    rtype_writer_self(*accessor_names, type_behavior)
+	end
+
+	# Makes the getter methods typed
+	# 
+	# @param [Array<#to_sym>] reader_names
+	# @param type_behavior A type behavior
+	# @return [void]
+	# 
+	# @raise [ArgumentError] If reader_names contains nil
+	# @raise [TypeSignatureError] If type_behavior is invalid
+	# @see #rtype_self
+	def rtype_reader_self(*reader_names, type_behavior)
+		reader_names.each do |reader_name|
+			raise ArgumentError, "reader_names contains nil" if reader_name.nil?
 			
-			accessor_name = accessor_name.to_sym
-			if !respond_to?(accessor_name) || !respond_to?(:"#{accessor_name}=")
-				singleton_class.send(:attr_accessor, accessor_name)
+			reader_name = reader_name.to_sym
+			if !respond_to?(reader_name)
+				singleton_class.send(:attr_reader, reader_name)
 			end
-			::Rtype::define_typed_accessor(singleton_class, accessor_name, type_behavior)
+			::Rtype::define_typed_reader(singleton_class, reader_name, type_behavior)
+		end
+		nil
+	end
+
+	# Makes the setting methods typed
+	# 
+	# @param [Array<#to_sym>] writer_names
+	# @param type_behavior A type behavior
+	# @return [void]
+	# 
+	# @raise [ArgumentError] If writer_names contains nil
+	# @raise [TypeSignatureError] If type_behavior is invalid
+	# @see #rtype_self
+	def rtype_writer_self(*writer_names, type_behavior)
+		writer_names.each do |writer_name|
+			raise ArgumentError, "writer_names contains nil" if writer_name.nil?
+			
+			writer_name = writer_name.to_sym
+			if !respond_to?(:"#{writer_name}=")
+				singleton_class.send(:attr_writer, writer_name)
+			end
+			::Rtype::define_typed_writer(singleton_class, writer_name, type_behavior)
 		end
 		nil
 	end
